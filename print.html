@@ -473,6 +473,16 @@ public class Neutrino {
 <h2><a class="header" href="#modding-crush-course" id="modding-crush-course">Modding Crush Course</a></h2>
 <p>A handy tool for making models of things like Blocks and others: <a href="https://blockbench.net/">BlockBench</a>.</p>
 <h1><a class="header" href="#item-and-itemstack" id="item-and-itemstack">Item and ItemStack</a></h1>
+<p>Here, I want to talk about the distinction between <code>Item</code> and <code>ItemStack</code>. Let's start with <code>ItemStack</code> and think step by step about why they need to be distinguished.</p>
+<p>As the name implies, <code>ItemStack</code> is an Item Stack. In fact, in the game, all the items in the item slots are individual <code>ItemStacks</code>.</p>
+<p><img src="item/item-and-itemstack.assets/image-20200428080226198.png" alt="image-20200428080226198" /></p>
+<p>For example, in this case, there are three <code>ItemStack</code>s.</p>
+<p>But this begs the question, although one set of apples is different in number from the second set, that number doesn't actually affect their actual performance. They can also be eaten, and the effect of the reply is the same when eaten.</p>
+<p>These are the same as <code>Properties</code> or <code>Default Behavior</code>, and the same logic should be extracted from them, which is called <code>Item</code>.</p>
+<p>Again, there are only two kinds of <code>Items</code> here: apples and iron swords.</p>
+<p>You can imagine that <code>ItemStack</code> is a wrapper for <code>Item</code>, which provides additional attributes such as quantity, NBT tags, etc. </p>
+<p>It's worth noting here that just because <code>ItemStack</code> is zero, it doesn't mean it's null, so you have to use the <code>isEmpty()</code> method under <code>ItemStack</code> to determine if it's null.</p>
+<p><code>ItemStack</code> contains <code>Item</code> is actually the same instance, the reason is very simple, if it is not the same instance, it will pointlessly produce many of the same instance, for optimization purposes, of course, is appropriate to share an instance, which also means that you can use<code>result.getItem() == Items</code> to detect which <code>Item</code> is stored in ItemStack.</p>
 <h1><a class="header" href="#item-group" id="item-group">Item Group</a></h1>
 <h1><a class="header" href="#food" id="food">Food</a></h1>
 <h1><a class="header" href="#sword" id="sword">Sword</a></h1>
