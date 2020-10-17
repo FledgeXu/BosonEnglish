@@ -1,0 +1,548 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Boson 1.16 Modding Tutorail</title>
+        
+        <meta name="robots" content="noindex" />
+        
+        
+
+
+        <!-- Custom HTML head -->
+        
+
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        
+        <link rel="icon" href="favicon.svg">
+        
+        
+        <link rel="shortcut icon" href="favicon.png">
+        
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        
+        <link rel="stylesheet" href="fonts/fonts.css">
+        
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introducation/intro.html"><strong aria-hidden="true">1.</strong> Introducation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="introducation/what-is-forge.html"><strong aria-hidden="true">1.1.</strong> What is Forge?</a></li><li class="chapter-item expanded "><a href="introducation/how-minecraft-works.html"><strong aria-hidden="true">1.2.</strong> How Minecraft Works?</a></li><li class="chapter-item expanded "><a href="introducation/development-model.html"><strong aria-hidden="true">1.3.</strong> Development Model</a></li><li class="chapter-item expanded "><a href="introducation/core-conception.html"><strong aria-hidden="true">1.4.</strong> Core Concepetion</a></li></ol></li><li class="chapter-item expanded "><a href="devenvironment/intro.html"><strong aria-hidden="true">2.</strong> Development Environment</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="devenvironment/setup-environment.html"><strong aria-hidden="true">2.1.</strong> Setup Environment</a></li><li class="chapter-item expanded "><a href="devenvironment/introduce-environment.html"><strong aria-hidden="true">2.2.</strong> Introduce Environment</a></li><li class="chapter-item expanded "><a href="devenvironment/customize-mod-info.html"><strong aria-hidden="true">2.3.</strong> Customize Mod Info</a></li></ol></li><li class="chapter-item expanded "><a href="item/intro.html"><strong aria-hidden="true">3.</strong> Item</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="item/first-item.html"><strong aria-hidden="true">3.1.</strong> First Item</a></li><li class="chapter-item expanded "><a href="item/model-and-texture.html"><strong aria-hidden="true">3.2.</strong> Model and Texture</a></li><li class="chapter-item expanded "><a href="item/item-and-itemstack.html"><strong aria-hidden="true">3.3.</strong> Item and ItemStack</a></li><li class="chapter-item expanded "><a href="item/item-group.html"><strong aria-hidden="true">3.4.</strong> Item Group</a></li><li class="chapter-item expanded "><a href="item/food.html"><strong aria-hidden="true">3.5.</strong> Food</a></li><li class="chapter-item expanded "><a href="item/sword.html"><strong aria-hidden="true">3.6.</strong> Sword</a></li><li class="chapter-item expanded "><a href="item/tool.html"><strong aria-hidden="true">3.7.</strong> Tool</a></li><li class="chapter-item expanded "><a href="item/armor.html"><strong aria-hidden="true">3.8.</strong> Armor</a></li></ol></li><li class="chapter-item expanded "><a href="localization/localization.html"><strong aria-hidden="true">4.</strong> Localization</a></li><li class="chapter-item expanded "><a href="block/intro.html"><strong aria-hidden="true">5.</strong> Block</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="block/first-block.html"><strong aria-hidden="true">5.1.</strong> First Block</a></li><li class="chapter-item expanded "><a href="block/block-and-blocksstate.html"><strong aria-hidden="true">5.2.</strong> Block and BlockState</a></li><li class="chapter-item expanded "><a href="block/block-model-and-texture.html"><strong aria-hidden="true">5.3.</strong> Block's Model and Texture</a></li><li class="chapter-item expanded "><a href="block/block-with-blocksstate.html"><strong aria-hidden="true">5.4.</strong> Block with BlockState</a></li><li class="chapter-item expanded "><a href="block/not-solid-block-and-custom-model.html"><strong aria-hidden="true">5.5.</strong> Not Solid Block and custom model</a></li><li class="chapter-item expanded "><a href="block/rendertype.html"><strong aria-hidden="true">5.6.</strong> Render Type</a></li></ol></li><li class="chapter-item expanded "><a href="specialmodel/intro.html"><strong aria-hidden="true">6.</strong> Special Model</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="specialmodel/obj-model.html"><strong aria-hidden="true">6.1.</strong> Obj Model</a></li></ol></li><li class="chapter-item expanded "><a href="tileentity/intro.html"><strong aria-hidden="true">7.</strong> TileEntity</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="tileentity/first-tileentity-and-data-storage.html"><strong aria-hidden="true">7.1.</strong> First TileEntity and Data Storage</a></li><li class="chapter-item expanded "><a href="tileentity/itickabletileentity.html"><strong aria-hidden="true">7.2.</strong> ITickableTileEntity</a></li><li class="chapter-item expanded "><a href="tileentity/tileentity-data-sync.html"><strong aria-hidden="true">7.3.</strong> TileEntity's Data Sync</a></li></ol></li><li class="chapter-item expanded "><a href="specialrender/intro.html"><strong aria-hidden="true">8.</strong> Special render</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="specialrender/ibakedmodel.html"><strong aria-hidden="true">8.1.</strong> IBakedModel</a></li><li class="chapter-item expanded "><a href="specialrender/ter.html"><strong aria-hidden="true">8.2.</strong> TileEntityRneder</a></li><li class="chapter-item expanded "><a href="specialrender/ister.html"><strong aria-hidden="true">8.3.</strong> ItemStackTileEntityRenderer</a></li></ol></li><li class="chapter-item expanded "><a href="event/intro.html"><strong aria-hidden="true">9.</strong> Event System</a></li><li class="chapter-item expanded "><a href="networking/intro.html"><strong aria-hidden="true">10.</strong> Network</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="networking/network-packet.html"><strong aria-hidden="true">10.1.</strong> Network Packet</a></li><li class="chapter-item expanded "><a href="networking/network-security.html"><strong aria-hidden="true">10.2.</strong> Network Security</a></li></ol></li><li class="chapter-item expanded "><a href="entity/intro.html"><strong aria-hidden="true">11.</strong> Entity</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="entity/first-entity.html"><strong aria-hidden="true">11.1.</strong> First Entity and Data Sync</a></li><li class="chapter-item expanded "><a href="entity/animal-and-ai.html"><strong aria-hidden="true">11.2.</strong> Animal and AI</a></li></ol></li><li class="chapter-item expanded "><a href="capability/intro.html"><strong aria-hidden="true">12.</strong> Capability System</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="capability/capability-from-scratch.html"><strong aria-hidden="true">12.1.</strong> Capability from Scratch</a></li><li class="chapter-item expanded "><a href="capability/use-predefined-capability.html"><strong aria-hidden="true">12.2.</strong> Use Predefined Capability</a></li><li class="chapter-item expanded "><a href="capability/attach-capability-provider.html"><strong aria-hidden="true">12.3.</strong> Attach Capability provider</a></li></ol></li><li class="chapter-item expanded "><a href="worldsaveddata/worldsaveddata.html"><strong aria-hidden="true">13.</strong> WorldSavedData</a></li><li class="chapter-item expanded "><a href="gui/intro.html"><strong aria-hidden="true">14.</strong> Gui</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="gui/first-gui.html"><strong aria-hidden="true">14.1.</strong> First Gui</a></li><li class="chapter-item expanded "><a href="gui/container.html"><strong aria-hidden="true">14.2.</strong> Container</a></li><li class="chapter-item expanded "><a href="gui/hud.html"><strong aria-hidden="true">14.3.</strong> HUD</a></li></ol></li><li class="chapter-item expanded "><a href="fluid/first-fluid.html"><strong aria-hidden="true">15.</strong> Fluid</a></li><li class="chapter-item expanded "><a href="worldgeneration/intro.html"><strong aria-hidden="true">16.</strong> World Generation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="worldgeneration/ore-generation.html"><strong aria-hidden="true">16.1.</strong> Ore Generation</a></li><li class="chapter-item expanded "><a href="worldgeneration/structure-generation.html"><strong aria-hidden="true">16.2.</strong> Structure Generation</a></li><li class="chapter-item expanded "><a href="worldgeneration/customize-biome-and-world-type.html"><strong aria-hidden="true">16.3.</strong> Customize Biome and World Type</a></li><li class="chapter-item expanded "><a href="worldgeneration/customize-dimension.html"><strong aria-hidden="true">16.4.</strong> Customize Dimension</a></li></ol></li><li class="chapter-item expanded "><a href="datapack/intro.html"><strong aria-hidden="true">17.</strong> Data Pack</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="datapack/recipes.html"><strong aria-hidden="true">17.1.</strong> Recipe</a></li><li class="chapter-item expanded "><a href="datapack/lootable.html"><strong aria-hidden="true">17.2.</strong> LootTable</a></li></ol></li><li class="chapter-item expanded "><a href="datagnerator/intro.html"><strong aria-hidden="true">18.</strong> Data Generator</a></li><li class="chapter-item expanded "><a href="command/command.html"><strong aria-hidden="true">19.</strong> Command</a></li><li class="chapter-item expanded "><a href="advancements/intro.html"><strong aria-hidden="true">20.</strong> Advancements</a></li><li class="chapter-item expanded "><a href="configure/configure.html"><strong aria-hidden="true">21.</strong> Configure</a></li><li class="chapter-item expanded "><a href="potion/intro.html"><strong aria-hidden="true">22.</strong> Potion</a></li><li class="chapter-item expanded "><a href="paticles/intro.html"><strong aria-hidden="true">23.</strong> Paticle</a></li><li class="chapter-item expanded "><a href="sounds/intro.html"><strong aria-hidden="true">24.</strong> Sound</a></li><li class="chapter-item expanded "><a href="io/intro.html"><strong aria-hidden="true">25.</strong> User Input</a></li><li class="chapter-item expanded "><a href="compatible/intro.html"><strong aria-hidden="true">26.</strong> Compatibiilty</a></li><li class="chapter-item expanded "><a href="at/intro.html"><strong aria-hidden="true">27.</strong> Access Transformer</a></li><li class="chapter-item expanded "><a href="coremode/intro.html"><strong aria-hidden="true">28.</strong> CoreMod</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">Boson 1.16 Modding Tutorail</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#introducation" id="introducation">Introducation</a></h1>
+<p>I’m not a native English Speaker. So that, this tutorial may have a lot of grammar and words problem. If you find any problem please tell me.</p>
+<p>If you have any question or feedback, welcome join my <a href="https://discord.gg/D5z3Wnq">Discord Server</a> .</p>
+<h2><a class="header" href="#license" id="license">License</a></h2>
+<p><a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-nd/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/">Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License</a>.</p>
+<h1><a class="header" href="#what-is-forge" id="what-is-forge">What is Forge?</a></h1>
+<p>This tutorial is a mod development tutorial based on Forge, so it's natural to answer the question, &quot;What is Forge?</p>
+<p>At first glance, this doesn't seem like a question at all, “Forge? Isn't Forge just Forge?” The first thought that comes to your inner mind when you see this question is probably this.</p>
+<p>But it's necessary to answer this question, and I'm going to talk a little bit about what Forge is, and the history of Forge. This may seem unrelated to our tutorial, but it is actually the &quot;Lore&quot; of mod development, and learning it will help you communicate with others better.</p>
+<p>We have to start with Minecraft itself, but first we have to make it clear that Minecraft is a commercial software written in Java. This means two things: first, Minecraft is relatively easy to modify, and second, the code itself is not open source and is obfuscated. Early on in Minecraft's history, because Mojang never provided an official API<sup class="footnote-reference"><a href="#1">1</a></sup> for Minecraft, the &quot;Mod Coder Pack&quot; project was born (hereinafter referred to as MCP).</p>
+<p>Remember what I said earlier about the two features of Minecraft that MCP uses to implement a set of tools that allow developers to modify the content of Minecraft jar packs directly?</p>
+<p>So <code>srg name</code>, <code>notch name</code> and <code>mcp name</code> were born.</p>
+<p>So what are these three?</p>
+<p>The first is the <code>notch name</code>, which is a name that Minecraft has directly decompiled and obfuscated, and is usually a meaningless alphanumeric combination. You can tell from the name Notch that it comes directly from Minecraft (<del>and the grudge against Notch</del>), for example <code>u</code> is a typical <code>notch name</code>.</p>
+<p>There is a example about <code>notch name</code></p>
+<pre><code class="language-java">public class cbw extends cbq {
+   public int u() {
+      return 0;
+   }
+
+   public int t() {
+      return 127;
+   }
+}
+</code></pre>
+<p>Next is the <code>srg name</code>, which is a one-to-one correspondence with the <code>notch name</code>, and <code>srg name</code> will not change from one version to the next, the reason why it is called <code>srg name</code>(<code>srg</code> meas Searge) is to commemorate <a href="https://twitter.com/SeargeDP">the leader</a> of the MCP project, Searge. But there are corresponding prefixes and suffixes to distinguish them. Take the above <code>u</code> as an example, its <code>srg name</code> is <code>func_214968_u</code>.</p>
+<pre><code class="language-java">public class NetherGenSettings extends GenerationSettings {
+   public int func_214968_u() {
+      return 0;
+   }
+
+   public int func_214967_t() {
+      return 127;
+   }
+}
+</code></pre>
+<p>Finally, there's the <code>mcp name</code>, which is also the name we come across most in mod development, where the code is already readable. In <code>mcp name</code>, the code is already readable. It's the same as the names we use in our normal java programs. But the <code>mcp name</code> is subject to change. For example, the <code>func_214968_u</code> above has an <code>mcp name</code> of <code>getBedrockFloorHeight</code>. The class name in <code>mcp name</code> is the same as the class name in <code>srg name</code>.</p>
+<pre><code class="language-java">public class NetherGenSettings extends GenerationSettings {
+   public int getBedrockFloorHeight() {
+      return 0;
+   }
+
+   public int getBedrockRoofHeight() {
+      return 127;
+   }
+}
+</code></pre>
+<p>As time went on, mod developers realized that modding Jar files directly to write mods was too crude, and that mod-to-mod compatibility was virtually non-existent. So Forge was born.</p>
+<p>Forge was actually a set of third-party APIs implemented by modifying the Minecraft way, and as time went on, MCP is now dead (some of MCP's tools are still alive). In addition to the Forge set of APIs, Fabric is also in the limelight, and Forge itself underwent a rewrite after Minecraft 1.13 arrived, introducing a number of APIs for functional programming.</p>
+<p>So how did Forge use the three names we mentioned earlier?</p>
+<p>After you install Forge, everything in the game will be decompiled into <code>srg names</code> to run, and your compiled mods will also be obfuscated into <code>srg names</code> to make sure it runs properly.</p>
+<hr />
+<div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
+<p>API (Application programming interface) is a mechanism provided by a program that allows a third party to modify or add functionality.</p>
+</div>
+<h1><a class="header" href="#how-minecraft-works" id="how-minecraft-works">How minecraft works</a></h1>
+<p>This section is very important in that you must build up a model image of Minecraft running in your own brain, which will help you understand the concepts covered later.</p>
+<p>In this section, I'll go over how Minecraft works in general, and a very important concept: the &quot;sides&quot;.</p>
+<p>Minecraft generally belongs to &quot;C/S (Client/Server) Architecture&quot;. So what is &quot;server&quot; and what is &quot;client&quot;?</p>
+<p>The name actually gives a general idea of what it means, the &quot;server&quot; is used to provide the service, and the &quot;client&quot; is used directly by the user. So how are these two sides represented in Minecraft?</p>
+<p>In Minecraft the division of duties between the two sides is as follows.</p>
+<ul>
+<li>
+<p>server side</p>
+<p>Responsible for the game's logic, reading and writing of data.</p>
+</li>
+<li>
+<p>client side</p>
+<p>It accepts input and output from the user and renders the game screen based on the data from the server.</p>
+</li>
+</ul>
+<p>It's worth noting that the distinction between client and server here is only logical. In fact if you are in single player mode, there will be both a server and a client on your computer, and they are in different threads<sup class="footnote-reference"><a href="#1">1</a></sup>. But when you connect to a server, only the client exists on your computer and the server is moved to a remote server.</p>
+<p>The following diagram roughly explains how Minecraft works.</p>
+<p><img src="introducation/how-minecraft-works.assets/How_minecraft_work.svg" alt="How_minecraft_work" /></p>
+<p>When you see this picture, you may wonder why the client has a data model when the server is responsible for the game logic. In fact, the &quot;client-side data model&quot; here is just a copy of the &quot;server-side data model&quot;, although they have separate game ticks and share a lot of the same code, but the final logic is still the server-side prevails.</p>
+<p>As we mentioned before, the client and server are independent, but they inevitably need to synchronize data, and in Minecraft, all client and server data synchronization is done through network packets. In most of the cases, the original version has already implemented a method to synchronize the data, we just need to call the method that has already been implemented, but in some cases, the original version does not implement the corresponding function, or it is not suitable to use the function provided by the original version, we have to create and send network packets to complete the data synchronization.</p>
+<p>So the next question is, how do we distinguish in our code whether we are on the client side or the server side?</p>
+<p>Minecraft's <code>World</code> has an <code>isRemote</code> field, which is <code>true</code> when on the client and <code>false</code> when on the server.</p>
+<hr />
+<div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
+<p>Thread is one of the units of program scheduling, being in different threads means that the logic and data of these two are independent of each other and can only be synchronized by specific methods. Specifically, the server is in the &quot;Server thread&quot; and the client is in the &quot;Render thread&quot;, if you've ever watched the output log when Minecraft starts, you should see these two words.</p>
+</div>
+<h1><a class="header" href="#development-model" id="development-model">Development Model</a></h1>
+<p>In this section, we're going to talk about what the Minecraft mod development model looks like in rough terms, and understanding this model will help you understand what a lot of the actions in mod development are for.</p>
+<p>In my opinion, Minecraft mod development basically follows the &quot;event-driven model&quot;, and we won't go into detail about what the &quot;event-driven model&quot; is here, you just need to have an emotional understanding of it.</p>
+<p>So what does Minecraft's &quot;event-driven mode&quot; look like? To answer this question, we need to clarify three concepts: &quot;event&quot;, &quot;bus&quot; and &quot;event handler&quot;.</p>
+<p>What is an &quot;event&quot; in the first place? As the word implies, &quot;event&quot; means &quot;something happened&quot;. For example, &quot;When a block is broken&quot; is an event, &quot;When a player dies&quot; is an event, but the examples are very specific, and events can be very abstract.</p>
+<p>What is an &quot;event handler&quot; next? An event handler is a function used to handle &quot;events&quot;. We can create an event handler to handle a “block destruction event&quot;, which reads &quot;recreate a block&quot;, and we can register an event handler to handle a &quot;player death event&quot;, which reads &quot;place a tombstone&quot;.</p>
+<p>When an bus occurs, the information of the event will be sent to the bus, and then the bus will select the event handler which has listened to the event and execute the event handler.</p>
+<p>![delepment model](development-model.assets/delepment model.svg)</p>
+<p>Note that the events and event handlers in this diagram are not in order.</p>
+<p>There are two buses in Forge development, <code>Mod bus</code> and <code>Forge bus</code>. All initialization related events are in <code>Mod bus</code> and all other events are in <code>Forge bus</code>.</p>
+<h1><a class="header" href="#core-conception" id="core-conception">Core Conception</a></h1>
+<p>In this subsection, I will cover a few concepts that are not difficult to understand but are very important.</p>
+<h2><a class="header" href="#register" id="register">register</a></h2>
+<p>If you want to add some content to Minecraft, then one of the things you have to do is register. Registration is a mechanism that tells the game itself which things are available. The things you need to register can basically be broken down into two parts: a registration name and an instance.</p>
+<h2><a class="header" href="#resourcelocation" id="resourcelocation">ResourceLocation</a></h2>
+<p>You can think of ResourceLocation as a specially formatted string that looks something like this: <code>minecraft:textures/block/stone.png</code>, a ResouceLocation specifies a specific file under the resource bundle. For example, this ResourceLocation represents the material image of the stone in the original resource pack. There will be one or more domains. The second half of the colon corresponds one-to-one with the directory structure within the <code>assets</code> folder. In a way, ResourceLocation is a special URL.</p>
+<h2><a class="header" href="#models-and-textures" id="models-and-textures">Models and Textures</a></h2>
+<p>In the game 3d objects basically have their model, the model and textures together define the specific look of an object. The model is the equivalent of bones, and the material is the equivalent of skin. For the most part, your materials are png images, make sure your material background is opaque, and secondly don't use semi-transparent pixels in your materials, it can be unpredictable and problematic.</p>
+<h1><a class="header" href="#development-environment" id="development-environment">Development Environment</a></h1>
+<h1><a class="header" href="#setup-environment" id="setup-environment">Setup Environment</a></h1>
+<h2><a class="header" href="#需要的工具" id="需要的工具">需要的工具</a></h2>
+<ul>
+<li><a href="https://adoptopenjdk.net/?variant=openjdk8&amp;jvmVariant=hotspot">AdoptOpenJDK8-HotSpot</a> For compatibility reasons, <strong>make sure you have JDK8 HotSpot</strong> installed.</li>
+<li><a href="https://www.jetbrains.com/idea/download/">IntelliJ IDEA 2020 Community Edition</a>, please install it yourself after the download is complete.</li>
+<li><a href="https://files.minecraftforge.net/maven/net/minecraftforge/forge/1.16.3-34.1.0/forge-1.16.3-34.1.0-mdk.zip">Forge MDK 1.16.3 34.1.0</a>, download and extract it to your favorite folder.</li>
+</ul>
+<h2><a class="header" href="#overview" id="overview">Overview</a></h2>
+<p>Minecraft Forge is a Gradle project, Gradle is a project builder tool, its main role is responsible for the project's dependency management, build and other functions. Dependency management refers to help you automatically download and configure the libraries you use in development, that is, the code written by others to facilitate your own development. Build refers to the mods you write into a package that others can install as a jar file.</p>
+<p>Forge officially wrote a plug-in called ForgeGradle (henceforth referred to as FG) to take care of the configuration of the entire mod development environment.</p>
+<h2><a class="header" href="#start-configuring" id="start-configuring">Start Configuring</a></h2>
+<p><strong>It is highly recommended to use the official launcher to start the 1.16.3 game once before starting the configuration to reduce network downloads during the environment configuration process and speed up the speed and success of the environment configuration</strong>.</p>
+<p>First select <code>Open or Import</code> for the startup page.</p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928111032977.png" alt="image-20200928111032977" /></p>
+<p>Select the <code>build.gradle</code> in the directory where your MDK was extracted to open it.</p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928111120002.png" alt="image-20200928111120002" /></p>
+<p>Select as `Open As Project'</p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928111131905.png" alt="image-20200928111131905" /></p>
+<p>Once opened, it will take longer or shorter to import, depending on your network and your own computer.</p>
+<p>When the import is complete, click the <code>build</code> panel at the bottom, and the green tick on the left side indicates the import was successful.</p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928111716782.png" alt="image-20200928111716782" /></p>
+<p>Before proceeding to the next step, I recommend adjusting IntelliJ's settings for Gradle to speed up the game launch afterwards.</p>
+<p>Open the IntelliJ settings interface, find the <code>Gradle</code> tab, change the <code>Build and using</code> from <code>Gradle</code> to <code>IntelliJ IDEA</code>, and click <code>Apply</code> to save.</p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928112057176.png" alt="image-20200928112057176" /></p>
+<p>By default, MDK sets the logging level is <code>debug</code> level, the output of this logging level is too much, it is not convenient for us to view the logs in the development, it is recommended to adjust to <code>info</code> level.</p>
+<p>Open your <code>build.gradle</code> file and change all <code>property 'forge.logging.console.level', ‘debug’</code> to <code>property 'forge.logging.console.level', ‘info’</code>.</p>
+<p>When you are done, click on the <code>Gradle</code> panel on the right side of the run, and select <code>genIntelliJRuns</code> under <code>fg_runs</code> in <code>Tasks</code>.</p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928112244157.png" alt="image-20200928112244157" /></p>
+<p>In this step, some of the remaining dependencies will be automatically downloaded, as well as Minecraft resource files. If you've launched the corresponding version of Minecraft with the official launcher before, this process will automatically copy the local cache, which will drastically reduce the download time. If you get an error during this process, basically just re-run <code>genIntelliJRuns</code> and it will fix it.</p>
+<p>Similarly, when &quot;Green Tick&quot; is displayed on the left side, the configuration is successful.</p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928112443232.png" alt="image-20200928112443232" /></p>
+<p>Click <code>Run=&gt;Edit Configurations</code> at the top.</p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928112521319.png" alt="image-20200928112521319" /></p>
+<p>Select the three items under <code>Application</code> and delete all tasks from <code>Before Launch</code> except <code>Build</code>.</p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928112744599.png" alt="image-20200928112744599" /></p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928112800414.png" alt="image-20200928112800414" /></p>
+<p>Then select <code>runClient</code> to start the game.</p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928112852625.png" alt="image-20200928112852625" /></p>
+<p>You can see that our game started successfully, and if you've followed the tutorial before and adjusted Gradle's settings, it shouldn't be very slow.</p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928113626808.png" alt="image-20200928113626808" /></p>
+<p>To make it easier to create directories and sub-packages later, unselect &quot;Compose Package&quot; and &quot;Compress Empty Middleware&quot; as shown below.</p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928113738234.png" alt="image-20200928113738234" /></p>
+<h2><a class="header" href="#jdk-common-errors" id="jdk-common-errors">JDK Common Errors</a></h2>
+<p>If you have multiple JDKs on your computer, it's possible that the JDK automatically selected by IntelliJ is wrong, making it impossible to import, and you'll need to manually modify the project's JDK and the JDK needed to run Gradle.</p>
+<p>Select <code>Porject Strucutre</code> under <code>File</code>.</p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928113803025.png" alt="image-20200928113803025" /></p>
+<p>Changing the project JDK to version 1.8</p>
+<p><img src="devenvironment/setup-environment.assets/image-20200928113851675.png" alt="image-20200928113851675" /></p>
+<h1><a class="header" href="#introduce-environment" id="introduce-environment">Introduce Environment</a></h1>
+<p>In this section, I'll describe the series of files and folders generated by Mod development, and what they do.</p>
+<p>The first and most important file is <code>build.gradle</code>, which is the configuration file for Gradle. It specifies how the Mod project is built, what dependencies it has, and how it is configured.</p>
+<p>One of the <code>minecraft</code> closures is about the configuration of Forge Gradle.</p>
+<p>The <code> mappings channel: 'snapshot', version: '20200514-1.16</code> configuration specifies the version of the mappings file to be used in this project, and I strongly recommend that you update the mappings file frequently. So what is a mappings file? Do you remember the <code>srg name</code> and <code>mcp name</code> that we mentioned before? The purpose of the mapping file is to provide a translation between <code>srg name</code> and <code>mcp name</code>.</p>
+<p><code>channel</code> means the category of the mapping file, and in most cases you should use <code>snapshot</code> to make sure your mcp name is up to date. In most cases, you should use <code>snapshot</code> (snapshot version) to make sure your mcp name is up to date, and then <code>version</code> is the specific version, in most cases a higher version of the game is compatible with a lower version of mapping, although the version number should not be too far off. There are also two other parameters that are commented out, which we'll leave aside for now.</p>
+<p>Another thing you might use is <code>dependencies</code> configuration, if your mod needs to depend on another java library or another mod, you need to add content here, the specific way to add, the comments have already given a detailed example, so I won't say more here. The <code>minecraft 'net.minecraftforge:forge:1.16.3-34.1.0'</code> specifies the Forge version you need to use, if you want to upgrade the Forge version, you can modify the content of this line, the format of the version is <code>net.minecraftforge:forge:game_version-forge_version</code>.</p>
+<p>The rest of the file is just like a normal <code>build.gradle</code>, if you want to know more about it, we recommend to learn Gradle.</p>
+<p>The next folder is the <code>src</code> folder, this is where we put our code and resource files, the <code>main</code> folder is where we run the code and files, and the <code>test</code> folder is where we put the test code. The <code>main</code> folder is where we put our code, and the <code>resources</code> folder is where we put our material models and other mods, except for the code.</p>
+<p>This is basically a standard <code>.minecraft</code> folder. It's worth noting that because the development environment has both Minecraft client and server code, they both share the <code>run</code> directory.</p>
+<p>The rest of the <code>build</code> directory is worth mentioning. When you run the <code>build</code> task in the Gradle panel, your mods will be packed up and placed under <code>build=&gt;libs</code>.</p>
+<p>All remaining folders and files with <code>gradle</code> in them are required for Gradle to run and configure, please do not delete them.</p>
+<h1><a class="header" href="#customize-mod-info" id="customize-mod-info">Customize Mod Info</a></h1>
+<p>From this section on we'll be officially writing our mod!</p>
+<h2><a class="header" href="#updating-mappings" id="updating-mappings">Updating Mappings</a></h2>
+<p>**Forge's Mapping system is in the process of migration, the content of the mapping file will be updated when the MMS system is released, the version we are currently using is <code>20200916-1.16.2</code> **</p>
+<p>We need change <code>mappings channel: 'snapshot', version: '20200514-1.16’</code> in <code>build.gradle</code> to <code>mappings channel: 'snapshot', version: '20200916-1.16.2’</code>。</p>
+<p><img src="devenvironment/customize-mod-info.assets/image-20200928114420876.png" alt="image-20200928114420876" /></p>
+<p>Then click the re-import button in the right Gradle panel to re-import the project, because the <code>build.gradle</code> file is very important, please be careful not to correct it.</p>
+<p><img src="devenvironment/customize-mod-info.assets/image-20200928114634037.png" alt="image-20200928114634037" /></p>
+<p>This process may involve downloading files (but not a lot), there is a chance of errors, check your <code>build.gradle</code> for errors, and try a few times.</p>
+<h2><a class="header" href="#configuration" id="configuration">Configuration</a></h2>
+<p>First we select all the directories and files in the <code>java</code> folder and then right-click to delete the default classes under the Java package.</p>
+<p><img src="devenvironment/customize-mod-info.assets/image-20200928164532729.png" alt="image-20200928164532729" /></p>
+<p>Then right-click again to create a new package</p>
+<p>By default your package name should be the backwards spelling of your domain name, because I don't want to use my own domain name as an example, so here I'm filling in <code>com.tutorial.boson</code>.</p>
+<p><img src="devenvironment/customize-mod-info.assets/image-20200928164952860.png" alt="image-20200928164952860" /></p>
+<p><img src="devenvironment/customize-mod-info.assets/image-20200928165013147.png" alt="image-20200928165013147" /></p>
+<p><img src="devenvironment/customize-mod-info.assets/image-20200928165047184.png" alt="image-20200928165047184" /></p>
+<p>Right-click to create a Java class named <code>Boson</code>.</p>
+<p><img src="devenvironment/customize-mod-info.assets/image-20200928165137663.png" alt="image-20200928165137663" /></p>
+<p>This <code>Boson</code> is the main class of our Mod.</p>
+<p>Next, create a <code>Utils</code> class to hold some global constants.</p>
+<p>The directory tree after creation is as follows.</p>
+<pre><code>java
+└── com
+    └── tutorial
+        └── boson
+            ├── Boson.java
+            └── Utils.java
+</code></pre>
+<p>Next let's go to the <code>Utils</code> class and define our <code>modid</code>, so what is your <code>modId</code>? <code>modId</code> is the unique identifier of your mod name, please note that <code>modId</code> and your mod name are not the same thing, it does not allow capital letters, nor spaces. The <code>modId</code> we've chosen here is <code>boson</code>.</p>
+<pre><code class="language-java">public class Utils {
+    public static final String MOD_ID = &quot;boson&quot;;
+}
+</code></pre>
+<p>Then go to <code>Boson</code> and add a <code>@Mod()</code> comment to the top of the class name, add the <code>modid</code> we defined before. After that, we can add the following:</p>
+<pre><code class="language-java">@Mod(Utils.MOD_ID)
+public class Boson {
+}
+</code></pre>
+<p>Next we need to modify <code>mods.toml</code> which is located under <code>resources/META-INF</code>. By default, IntelliJ does not syntactically highlight Toml files, so if you need syntax highlighting like I do, you can install the <code>Toml</code> plugin.</p>
+<p><code>mods.toml</code> is the configuration file for our mods, where we can modify the name, introduction, etc. of our mods. There are many configuration items, if a configuration item has <code>#mandatory</code> in the comment, it means it is required, if the injection is <code>#optional</code>, it means it is optional, you can add <code>#</code> in front of the configuration item to comment out the item.</p>
+<p>Becasue the most readers of this verison of Boson are English speaker. You can understand  comments. So just read the commnet to understand the function of configuration.</p>
+<p>The rest are all dependencies, and Forge's official examples are clearly written, so we won't elaborate here.</p>
+<p>The <code>mods.toml</code> I finished modifying is as follows:</p>
+<pre><code class="language-toml">modLoader=&quot;javafml&quot; 
+loaderVersion=&quot;[34,)&quot; 
+license=&quot;GNU GPLv3&quot;
+[[mods]]
+modId=&quot;boson&quot; 
+version=&quot;${file.jarVersion}&quot; 
+displayName=&quot;Boson&quot;
+authors=&quot;FledgeShiu&quot; 
+description='''
+This is Boson, the 1.16 Modding tutorial example mod.
+'''
+</code></pre>
+<p>Now that we've finished modding our mod info, let's open the game.</p>
+<p><img src="devenvironment/customize-mod-info.assets/image-20200928170338998.png" alt="image-20200928170338998" /></p>
+<p>You can see that our Mod has appeared!</p>
+<h1><a class="header" href="#item" id="item">Item</a></h1>
+<h1><a class="header" href="#first-item" id="first-item">First Item</a></h1>
+<p>From now on we will officially start writing code. First of all, a few things to say, the project's code will be open source, each section of the code links I will put at the back of the article, and for the sake of later amendments and easy to view.</p>
+<p>First we have to be clear about which steps are required to create an item. The answer is three steps: create your own item and inherit the class from the original item, instantiate the item, and finally register the item into the game.</p>
+<p>Note that these steps above are generic, and many custom content additions follow them.</p>
+<p>Once we know the above steps, let's start adding our first item, where we'll add an Obsidian Ingot.</p>
+<p>First we need to create an item class and have that class inherit the original <code>Item</code> class.</p>
+<pre><code class="language-java">public class ObsidianIngot extends Item {
+    public ObsidianIngot() {
+        super(new Properties().group(ItemGroup.MATERIALS));
+    }
+}
+</code></pre>
+<p>The code for this class is very simple, with only one constructor.</p>
+<p>The only thing worth mentioning here is <code>new Properties().group(ItemGroup.MATERIALS)</code>, this <code>Properties</code> specifies some properties of the item, such as: whether it is food or not, or which item bar the item is in in creation mode.</p>
+<p>Here we have created a <code>Properties</code> and called the <code>group</code> method and passed in <code>ItemGroup. MATERIALS</code>. This adds the item to the original Miscellaneous creation mode item field, but you don't have to call the <code>group</code> method.</p>
+<p>Next we need to instantiate and register the item, which used to be two separate steps, but Forge has added a mechanism called <code>DeferredRegister</code>, which makes it very easy to register an item.</p>
+<pre><code class="language-java">public class ItemRegistry {
+    public static final DeferredRegister&lt;Item&gt; ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Utils.MOD_ID);
+    public static final RegistryObject&lt;Item&gt; obsidianIngot = ITEMS.register(&quot;obsidian_ingot&quot;, ObsidianIngot::new);
+}
+
+</code></pre>
+<p>That's all there is to register, first we create a variable of type <code>DeferredRegister&lt;Item&gt;</code> named <code>ITEMS</code>, which is a generic type indicating that the thing we need to register is the item, and then by <code>new DeferredRegister&lt;&gt;(ForgeRegistries.ITEMS Utils.MOD_ID);</code> instantiates this class, which has two arguments <code>ForgeRegistries.ITEMS</code> representing the item we want to register, and the second argument filled in should be your <code>modId</code>. We've created our registrar, and the next step is to register our item.</p>
+<p>Remember what I said before? You need two things to register, one is the &quot;register name&quot;, and the other is the instance of the object you want to register, the two arguments in <code>ITEMS.register</code> correspond to these two things.</p>
+<pre><code class="language-java">public static final RegistryObject&lt;Item&gt; obsidianIngot = ITEMS.register(&quot;obsidian_ingot&quot;, ObsidianIngot::new);
+</code></pre>
+<p>The first argument is very easy to understand, <code>obsidian_ingot</code> corresponds to the registration name, please note that the registration name here also do not use capital letters, because the second argument here needs a type is a <code>Supplier</code>, here we put directly on the <code>ObsidianIngot</code> class of the method of construction of the method reference on, if you are not familiar with this syntax, please first at least understand the Java8 functional programming related to the content.</p>
+<p>You see, even though we didn't declare the variables explicitly, we still instantiated the class of our item when we registered it.</p>
+<p>There's one last step left and we're ready to add items successfully.</p>
+<pre><code class="language-java">@Mod(Utils.MOD_ID)
+public class Neutrino {
+    public Neutrino() {
+        ItemRegistry.ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
+    }
+}
+</code></pre>
+<p>We have added a line of code to the build method of the <code>Mod</code> main class, <code>FMLJavaModLoadingContext.get().getModEventBus();</code> which means get <code>Mod</code> bus, if you don't know what <code>Mod</code> bus is please scroll ahead. And <code>ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());</code> means to register <code>ITEMS</code> into <code>Mod</code> bus. Why register <code>ITEMS</code> into the <code>Mod</code> bus? The reason is that <code>DeferredRegister</code> is based on an event system implementation.</p>
+<p>At this point, the code needed to add the items we want to add has been written, so open the game and take a look.</p>
+<p><img src="item/first-item.assets/image-20200928175346817.png" alt="image-20200928175346817" /></p>
+<p><img src="item/first-item.assets/image-20200928175414243.png" alt="image-20200928175414243" /></p>
+<p>The item is still ugly, but that's our first item.</p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/first_item">源码链接</a></p>
+<h1><a class="header" href="#model-and-texture" id="model-and-texture">Model and Texture</a></h1>
+<h1><a class="header" href="#item-and-itemstack" id="item-and-itemstack">Item and ItemStack</a></h1>
+<h1><a class="header" href="#item-group" id="item-group">Item Group</a></h1>
+<h1><a class="header" href="#food" id="food">Food</a></h1>
+<h1><a class="header" href="#sword" id="sword">Sword</a></h1>
+<h1><a class="header" href="#tool" id="tool">Tool</a></h1>
+<h1><a class="header" href="#armor" id="armor">Armor</a></h1>
+<h1><a class="header" href="#localization" id="localization">Localization</a></h1>
+<h1><a class="header" href="#block" id="block">Block</a></h1>
+<h1><a class="header" href="#first-block" id="first-block">First Block</a></h1>
+<h1><a class="header" href="#block-and-blockstate" id="block-and-blockstate">Block and BlockState</a></h1>
+<h1><a class="header" href="#blocks-model-and-texture" id="blocks-model-and-texture">Block's Model and Texture</a></h1>
+<h1><a class="header" href="#block-with-blockstate" id="block-with-blockstate">Block with BlockState</a></h1>
+<h1><a class="header" href="#not-solid-block-and-custom-model" id="not-solid-block-and-custom-model">Not Solid Block and custom model</a></h1>
+<h1><a class="header" href="#render-type" id="render-type">Render Type</a></h1>
+<h1><a class="header" href="#special-model" id="special-model">Special Model</a></h1>
+<h1><a class="header" href="#obj-model" id="obj-model">Obj Model</a></h1>
+<h1><a class="header" href="#tileentity" id="tileentity">TileEntity</a></h1>
+<h1><a class="header" href="#first-tileentity-and-data-storage" id="first-tileentity-and-data-storage">First TileEntity and Data Storage</a></h1>
+<h1><a class="header" href="#itickabletileentity" id="itickabletileentity">ITickableTileEntity</a></h1>
+<h1><a class="header" href="#tileentitys-data-sync" id="tileentitys-data-sync">TileEntity's Data Sync</a></h1>
+<h1><a class="header" href="#special-render" id="special-render">Special render</a></h1>
+<h1><a class="header" href="#ibakedmodel" id="ibakedmodel">IBakedModel</a></h1>
+<h1><a class="header" href="#tileentityrneder" id="tileentityrneder">TileEntityRneder</a></h1>
+<h1><a class="header" href="#itemstacktileentityrenderer" id="itemstacktileentityrenderer">ItemStackTileEntityRenderer</a></h1>
+<h1><a class="header" href="#event-system" id="event-system">Event System</a></h1>
+<h1><a class="header" href="#network" id="network">Network</a></h1>
+<h1><a class="header" href="#network-packet" id="network-packet">Network Packet</a></h1>
+<h1><a class="header" href="#network-security" id="network-security">Network Security</a></h1>
+<h1><a class="header" href="#entity" id="entity">Entity</a></h1>
+<h1><a class="header" href="#first-entity-and-data-sync" id="first-entity-and-data-sync">First Entity and Data Sync</a></h1>
+<h1><a class="header" href="#animal-and-ai" id="animal-and-ai">Animal and AI</a></h1>
+<h1><a class="header" href="#capability-system" id="capability-system">Capability System</a></h1>
+<h1><a class="header" href="#capability-from-scratch" id="capability-from-scratch">Capability from Scratch</a></h1>
+<h1><a class="header" href="#use-predefined-capability" id="use-predefined-capability">Use Predefined Capability</a></h1>
+<h1><a class="header" href="#attach-capability-provider" id="attach-capability-provider">Attach Capability provider</a></h1>
+<h1><a class="header" href="#worldsaveddata" id="worldsaveddata">WorldSavedData</a></h1>
+<h1><a class="header" href="#gui" id="gui">Gui</a></h1>
+<h1><a class="header" href="#first-gui" id="first-gui">First Gui</a></h1>
+<h1><a class="header" href="#container" id="container">Container</a></h1>
+<h1><a class="header" href="#hud" id="hud">HUD</a></h1>
+<h1><a class="header" href="#fluid" id="fluid">Fluid</a></h1>
+<h1><a class="header" href="#world-generation" id="world-generation">World Generation</a></h1>
+<h1><a class="header" href="#ore-generation" id="ore-generation">Ore Generation</a></h1>
+<h1><a class="header" href="#structure-generation" id="structure-generation">Structure Generation</a></h1>
+<h1><a class="header" href="#customize-biome-and-world-type" id="customize-biome-and-world-type">Customize Biome and World Type</a></h1>
+<h1><a class="header" href="#customize-dimension" id="customize-dimension">Customize Dimension</a></h1>
+<h1><a class="header" href="#data-pack" id="data-pack">Data Pack</a></h1>
+<h1><a class="header" href="#recipe" id="recipe">Recipe</a></h1>
+<h1><a class="header" href="#loottable" id="loottable">LootTable</a></h1>
+<h1><a class="header" href="#data-generator" id="data-generator">Data Generator</a></h1>
+<h1><a class="header" href="#command" id="command">Command</a></h1>
+<h1><a class="header" href="#advancements" id="advancements">Advancements</a></h1>
+<h1><a class="header" href="#configure" id="configure">Configure</a></h1>
+<h1><a class="header" href="#potion" id="potion">Potion</a></h1>
+<h1><a class="header" href="#paticle" id="paticle">Paticle</a></h1>
+<h1><a class="header" href="#sound" id="sound">Sound</a></h1>
+<h1><a class="header" href="#user-input" id="user-input">User Input</a></h1>
+<h1><a class="header" href="#compatibiilty" id="compatibiilty">Compatibiilty</a></h1>
+<h1><a class="header" href="#access-transformer" id="access-transformer">Access Transformer</a></h1>
+<h1><a class="header" href="#coremod" id="coremod">CoreMod</a></h1>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+        
+        <script type="text/javascript">
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+        
+        
+
+    </body>
+</html>
