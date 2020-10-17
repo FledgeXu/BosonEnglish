@@ -160,6 +160,53 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#model-and-texture" id="model-and-texture">Model and Texture</a></h1>
+<p>In the previous section we have successfully added the first item, which was of course ugly, but in this section we will add models and materials to it.</p>
+<p>First create a folder under <code>resources</code> in the following directory.</p>
+<pre><code>resources
+├── META-INF
+│   └── mods.toml
+├── assets
+│   └── boson
+│       ├── models
+│       │   └── item
+│       └── textures
+│           └── item
+└── pack.mcmeta
+</code></pre>
+<p>In fact, <code>assets</code> is a resources package that belongs to a mod. For the specific directory structure, readers can look for the current game version of the material package tutorial to learn.</p>
+<p>Next let's add the model file, first create a JSON file with the same registration name as the item you added in <code>models</code> in <code>item</code>, in our case <code>obsidian_ingot.json</code>.</p>
+<p>It reads as follows:</p>
+<pre><code class="language-json">{
+  &quot;parent&quot;: &quot;item/generated&quot;,
+  &quot;textures&quot;: {
+    &quot;layer0&quot;: &quot;boson:item/obsidian_ingot&quot;
+  }
+}
+</code></pre>
+<p>It's pretty simple here: <code>&quot;parent&quot;: &quot;item/generated&quot;</code> specifies what the <code>parent</code> of this model is, and <code>&quot;layer0&quot;: &quot;boson:item/obsidian_ingot&quot;</code> specifies the specific textures. <code>boson:</code> means this is under our own <code>assets</code> file, and <code>item/obsidian_ingot</code> means it's the image <code>textures/item/obsidian_ingot.png</code>.</p>
+<p>You can read the detailed format of the model file yourself <a href="https://minecraft.gamepedia.com/Model">Wiki</a></p>
+<p>Next, we place our texture file under <code>textures/item/obsidian_ingot.png</code>, please note that the ratio of the texture file is 1:1, and preferably no larger than 32x32 pixels.</p>
+<img src="./model-and-texture.assets/obsidian_ingot.png" style="zoom:300%;" />
+<p><strong>The loading flow here is: the game first gets the corresponding model file according to your registration name, then load the corresponding material file through the <code>textures</code> in the model file.</strong></p>
+<p>The completed directory tree is created as follows:</p>
+<pre><code>resources
+├── META-INF
+│   └── mods.toml
+├── assets
+│   └── boson
+│       ├── models
+│       │   └── item
+│       │       └── obsidian_ingot.json
+│       └── textures
+│           └── item
+│               └── obsidian_ingot.png
+└── pack.mcmeta
+
+</code></pre>
+<p>After launching the game you'll see we have the model and material items.</p>
+<p><img src="model-and-texture.assets/image-20200427113433338.png" alt="image-20200427113433338" /></p>
+<h2><a class="header" href="#modding-crush-course" id="modding-crush-course">Modding Crush Course</a></h2>
+<p>A handy tool for making models of things like Blocks and others: <a href="https://blockbench.net/">BlockBench</a>.</p>
 
                     </main>
 
