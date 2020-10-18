@@ -160,6 +160,91 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#sword" id="sword">Sword</a></h1>
+<p>In this section, we'll explain how to create a new sword, and here we'll use the Obsidian Sword as an example.</p>
+<p>First we have to create an <code>ItemTier</code>. The <code>ItemTier</code> is what we call tool levels, such as <code>Diamond Level</code>, <code>Iron Level</code> .</p>
+<pre><code class="language-java">public enum ModItemTier implements IItemTier {
+
+    OBSIDIAN(3, 2000, 10.0F, 4.0F, 30, () -&gt; {
+        return Ingredient.fromItems(ItemRegistry.obsidianIngot.get());
+    });
+
+    private final int harvestLevel;
+    private final int maxUses;
+    private final float efficiency;
+    private final float attackDamage;
+    private final int enchantability;
+    private final LazyValue&lt;Ingredient&gt; repairMaterial;
+
+     ModItemTier(int harvestLevelIn, int maxUsesIn, float efficiencyIn, float attackDamageIn, int enchantabilityIn, Supplier&lt;Ingredient&gt; repairMaterialIn) {
+        this.harvestLevel = harvestLevelIn;
+        this.maxUses = maxUsesIn;
+        this.efficiency = efficiencyIn;
+        this.attackDamage = attackDamageIn;
+        this.enchantability = enchantabilityIn;
+        this.repairMaterial = new LazyValue&lt;&gt;(repairMaterialIn);
+    }
+
+    @Override
+    public int getMaxUses() {
+        return this.maxUses;
+    }
+
+    @Override
+    public float getEfficiency() {
+        return this.efficiency;
+    }
+
+    @Override
+    public float getAttackDamage() {
+        return this.attackDamage;
+    }
+
+    @Override
+    public int getHarvestLevel() {
+        return this.harvestLevel;
+    }
+
+    @Override
+    public int getEnchantability() {
+        return this.enchantability;
+    }
+
+    @Override
+    public Ingredient getRepairMaterial() {
+        return this.repairMaterial.getValue();
+    }
+
+}
+</code></pre>
+<p>Again, this may seem like an awful lot of content, but it's not as complicated as you might think.</p>
+<p>Here we create a <code>ModItemTier</code> class and inherit the <code>IItemTier</code> interface, the reason is that the original <code>net.minecraft.item.ItemTier</code> is implemented in enum, we can't add anything to it ourselves, so we have to implement it ourselves, we basically just copy it here. The original implementation, with all the properties of the original, is also in this class, so you can refer to it.</p>
+<p>As for the various methods in this enum, I'm not going to explain them here, but with the experience of several previous items, I'm sure the reader reading this will have the ability to guess the function's function by its name.</p>
+<p>Similarly, we create an <code>ObsidianSword</code>, but this time the inheritance class is a little different, this time we directly inherit the original <code>SwordItem</code> class, if you look at the inheritance diagram, you can see that <code>SwordItem</code> is a subclass of <code>Item</code>.</p>
+<p><img src="sword.assets/image-20200928181500005.png" alt="image-20200928181500005" /></p>
+<p>Implementation:</p>
+<pre><code class="language-java">public class ObsidianSword extends SwordItem {
+    public ObsidianSword() {
+        super(ModItemTier.OBSIDIAN, 3, -2.4F, new Item.Properties().group(ItemGroup.COMBAT));
+    }
+}
+</code></pre>
+<p>Please also refer to the original implementation here for <code>3</code> and <code>-2.4F</code>, where all item registrations are in <code>net.minecraft.item.Items</code>.</p>
+<p>Then register the item.</p>
+<pre><code class="language-java">public static RegistryObject&lt;Item&gt; obsidianSword = ITEMS.register(&quot;obsidian_sword&quot;, ObsidianSword::new);
+</code></pre>
+<p>Adding model files.</p>
+<pre><code class="language-json">{
+  &quot;parent&quot;: &quot;item/generated&quot;,
+  &quot;textures&quot;: {
+    &quot;layer0&quot;: &quot;boson:item/obsidian_sword&quot;
+  }
+}
+</code></pre>
+<p>and textures:</p>
+<img src="sword.assets/obsidian_sword.png" alt="obsidian_sword" style="zoom:300%;" />
+<p>Once you're done creating it, open the game and see.</p>
+<p><img src="sword.assets/image-20200427184918516.png" alt="image-20200427184918516" /></p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/melee_weapons">Source Code</a></p>
 
                     </main>
 

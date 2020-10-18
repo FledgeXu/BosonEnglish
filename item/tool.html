@@ -159,7 +159,26 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#tool" id="tool">Tool</a></h1>
+                        <h1><a class="header" href="#tools" id="tools">Tools</a></h1>
+<p>In this section, we'll learn how to add a new tool, and here's an example of a new pickaxe.</p>
+<p>Let us first observe the inheritance tree.</p>
+<p><img src="tool.assets/image-20200928183235878.png" alt="image-20200928183235878" /></p>
+<p>You can see that the original version has provided classes corresponding to 4 tools, and there is a <code>ToolItem</code> on top of these tools. If you want to create a new type of tool, you can choose to inherit and implement this class. Please refer to the original version for the implementation method 4 categories.</p>
+<p>Next we begin to create the obsidian pickaxe</p>
+<pre><code class="language-java">public class ObsidianPickaxe extends PickaxeItem {
+    public ObsidianPickaxe() {
+        super(ModItemTier.OBSIDIAN, 2, -3f, (new Item.Properties()).group(ModGroup.itemGroup));
+    }
+}
+</code></pre>
+<p>As you can see, here we choose to directly inherit the <code>PickaxeItem</code> class, and then pass directly we create a good obsidian <code>ItemTier</code>, the rest of the parameters, please refer to the original implementation.</p>
+<p>And then there's registration.</p>
+<pre><code class="language-java">public static final RegistryObject&lt;Item&gt; obsidianPickaxe = ITEMS.register(&quot;obsidian_pickaxe&quot;, ObsidianPickaxe::new);
+</code></pre>
+<p>Adding textures and models is not something I'll go into here.</p>
+<p>Open up the game and take a look, and you should be able to see the brand new Obsidian pickaxe.</p>
+<p><img src="tool.assets/image-20200928183155484.png" alt="image-20200928183155484" /></p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/tool">Source Code</a></p>
 
                     </main>
 

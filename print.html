@@ -553,7 +553,111 @@ public class Neutrino {
 <p><img src="item/food.assets/image-20200427165949417.png" alt="image-20200427165949417" /></p>
 <p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/food">Source Code</a></p>
 <h1><a class="header" href="#sword" id="sword">Sword</a></h1>
-<h1><a class="header" href="#tool" id="tool">Tool</a></h1>
+<p>In this section, we'll explain how to create a new sword, and here we'll use the Obsidian Sword as an example.</p>
+<p>First we have to create an <code>ItemTier</code>. The <code>ItemTier</code> is what we call tool levels, such as <code>Diamond Level</code>, <code>Iron Level</code> .</p>
+<pre><code class="language-java">public enum ModItemTier implements IItemTier {
+
+    OBSIDIAN(3, 2000, 10.0F, 4.0F, 30, () -&gt; {
+        return Ingredient.fromItems(ItemRegistry.obsidianIngot.get());
+    });
+
+    private final int harvestLevel;
+    private final int maxUses;
+    private final float efficiency;
+    private final float attackDamage;
+    private final int enchantability;
+    private final LazyValue&lt;Ingredient&gt; repairMaterial;
+
+     ModItemTier(int harvestLevelIn, int maxUsesIn, float efficiencyIn, float attackDamageIn, int enchantabilityIn, Supplier&lt;Ingredient&gt; repairMaterialIn) {
+        this.harvestLevel = harvestLevelIn;
+        this.maxUses = maxUsesIn;
+        this.efficiency = efficiencyIn;
+        this.attackDamage = attackDamageIn;
+        this.enchantability = enchantabilityIn;
+        this.repairMaterial = new LazyValue&lt;&gt;(repairMaterialIn);
+    }
+
+    @Override
+    public int getMaxUses() {
+        return this.maxUses;
+    }
+
+    @Override
+    public float getEfficiency() {
+        return this.efficiency;
+    }
+
+    @Override
+    public float getAttackDamage() {
+        return this.attackDamage;
+    }
+
+    @Override
+    public int getHarvestLevel() {
+        return this.harvestLevel;
+    }
+
+    @Override
+    public int getEnchantability() {
+        return this.enchantability;
+    }
+
+    @Override
+    public Ingredient getRepairMaterial() {
+        return this.repairMaterial.getValue();
+    }
+
+}
+</code></pre>
+<p>Again, this may seem like an awful lot of content, but it's not as complicated as you might think.</p>
+<p>Here we create a <code>ModItemTier</code> class and inherit the <code>IItemTier</code> interface, the reason is that the original <code>net.minecraft.item.ItemTier</code> is implemented in enum, we can't add anything to it ourselves, so we have to implement it ourselves, we basically just copy it here. The original implementation, with all the properties of the original, is also in this class, so you can refer to it.</p>
+<p>As for the various methods in this enum, I'm not going to explain them here, but with the experience of several previous items, I'm sure the reader reading this will have the ability to guess the function's function by its name.</p>
+<p>Similarly, we create an <code>ObsidianSword</code>, but this time the inheritance class is a little different, this time we directly inherit the original <code>SwordItem</code> class, if you look at the inheritance diagram, you can see that <code>SwordItem</code> is a subclass of <code>Item</code>.</p>
+<p><img src="item/sword.assets/image-20200928181500005.png" alt="image-20200928181500005" /></p>
+<p>Implementation:</p>
+<pre><code class="language-java">public class ObsidianSword extends SwordItem {
+    public ObsidianSword() {
+        super(ModItemTier.OBSIDIAN, 3, -2.4F, new Item.Properties().group(ItemGroup.COMBAT));
+    }
+}
+</code></pre>
+<p>Please also refer to the original implementation here for <code>3</code> and <code>-2.4F</code>, where all item registrations are in <code>net.minecraft.item.Items</code>.</p>
+<p>Then register the item.</p>
+<pre><code class="language-java">public static RegistryObject&lt;Item&gt; obsidianSword = ITEMS.register(&quot;obsidian_sword&quot;, ObsidianSword::new);
+</code></pre>
+<p>Adding model files.</p>
+<pre><code class="language-json">{
+  &quot;parent&quot;: &quot;item/generated&quot;,
+  &quot;textures&quot;: {
+    &quot;layer0&quot;: &quot;boson:item/obsidian_sword&quot;
+  }
+}
+</code></pre>
+<p>and textures:</p>
+<img src="item/sword.assets/obsidian_sword.png" alt="obsidian_sword" style="zoom:300%;" />
+<p>Once you're done creating it, open the game and see.</p>
+<p><img src="item/sword.assets/image-20200427184918516.png" alt="image-20200427184918516" /></p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/melee_weapons">Source Code</a></p>
+<h1><a class="header" href="#tools" id="tools">Tools</a></h1>
+<p>In this section, we'll learn how to add a new tool, and here's an example of a new pickaxe.</p>
+<p>Let us first observe the inheritance tree.</p>
+<p><img src="item/tool.assets/image-20200928183235878.png" alt="image-20200928183235878" /></p>
+<p>You can see that the original version has provided classes corresponding to 4 tools, and there is a <code>ToolItem</code> on top of these tools. If you want to create a new type of tool, you can choose to inherit and implement this class. Please refer to the original version for the implementation method 4 categories.</p>
+<p>Next we begin to create the obsidian pickaxe</p>
+<pre><code class="language-java">public class ObsidianPickaxe extends PickaxeItem {
+    public ObsidianPickaxe() {
+        super(ModItemTier.OBSIDIAN, 2, -3f, (new Item.Properties()).group(ModGroup.itemGroup));
+    }
+}
+</code></pre>
+<p>As you can see, here we choose to directly inherit the <code>PickaxeItem</code> class, and then pass directly we create a good obsidian <code>ItemTier</code>, the rest of the parameters, please refer to the original implementation.</p>
+<p>And then there's registration.</p>
+<pre><code class="language-java">public static final RegistryObject&lt;Item&gt; obsidianPickaxe = ITEMS.register(&quot;obsidian_pickaxe&quot;, ObsidianPickaxe::new);
+</code></pre>
+<p>Adding textures and models is not something I'll go into here.</p>
+<p>Open up the game and take a look, and you should be able to see the brand new Obsidian pickaxe.</p>
+<p><img src="item/tool.assets/image-20200928183155484.png" alt="image-20200928183155484" /></p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/tool">Source Code</a></p>
 <h1><a class="header" href="#armor" id="armor">Armor</a></h1>
 <p>In this section, we'll come to learn how to add a set of Armor, and here we'll use Obsidian Armor as an example.</p>
 <p>As with tools and weapons, equipment has its own class, <code>IArmorMaterial</code>, and here we'll follow the original version and implement this interface with an Enum.</p>
@@ -661,6 +765,54 @@ public static final RegistryObject&lt;Item&gt; obsidianBoots = ITEMS.register(&q
 <p><img src="item/armor.assets/image-20200928192041780.png" alt="image-20200928192041780" /></p>
 <p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/armor">Source Code</a></p>
 <h1><a class="header" href="#localization" id="localization">Localization</a></h1>
+<p>In this section, we will learn how to add names to our items.</p>
+<p>In the previous chapters, the names of the items we created looked like a string of meaningless characters. In this section we will add a meaningful name to them.</p>
+<p>In Minecraft, the name of the file is provided in the form of a language file. In the higher version, the language file is a json file. Its approximate content is as follows:</p>
+<pre><code class="language-json">{
+  &quot;language.name&quot;: &quot;English&quot;,
+  &quot;language.region&quot;: &quot;United States&quot;,
+  &quot;language.code&quot;: &quot;en_us&quot;,
+  &quot;narrator.button.accessibility&quot;: &quot;Accessibility&quot;,
+  &quot;narrator.button.language&quot;: &quot;Language&quot;
+}
+</code></pre>
+<p>You can see that a language file is actually a &quot;key-value pair&quot;, where the &quot;key&quot; is an in-game number, and the &quot;value&quot; is the specific translation. The reason for this is that Minecraft has to support languages of many countries and regions. If each language is directly hardcoded into the game, it is obviously not maintainable. By default, if you do not add a corresponding translation to the object that needs to be translated in the game, then it will display the &quot;key&quot; of this translation by default.</p>
+<p>Take our Obsidian Ingot for example:</p>
+<p><img src="localization/localization.assets/image-20200427213837119.png" alt="image-20200427213837119" /> </p>
+<p>We haven't added a name to it yet. The <code>item.neutrino.obsidian_ingot</code> it displays is the default key value. Of course, you can also customize the key value. There are corresponding methods in the Item class to achieve this. As I said before, in the Minecraft source code and the function name guessing function is a necessary ability for Mod development, so here It is equivalent to a small test, please find a way to modify this key by yourself.</p>
+<p>But in some cases, the game cannot automatically add keys to my content by default. At this time, we have to create a key by ourselves. Minecraft provides a method called <code>I18n.format</code> for me to create it by myself. For the specific usage, we I will talk about it later.</p>
+<p>Let me create the language file.</p>
+<p>First, create a folder called <code>lang</code> under the <code>boson</code> folder. After the creation is successful, the directory tree is as follows:</p>
+<pre><code>resources
+├── META-INF
+│   └── mods.toml
+├── assets
+│   └── boson
+│       ├── lang
+│       ├── models
+│       │   └── item
+│       │       ├── obsidian_apple.json
+│       │       ├── obsidian_ingot.json
+│       │       └── obsidian_sword.json
+│       └── textures
+│           └── item
+│               ├── obsidian_apple.png
+│               ├── obsidian_ingot.png
+│               └── obsidian_sword.png
+└── pack.mcmeta
+</code></pre>
+<p>Here we take English as an example.</p>
+<p>First create a file called en_us with the following content.</p>
+<pre><code class="language-json">{
+  &quot;item.neutrino.obsidian_ingot&quot;: &quot;Obsidian Ingot&quot;,
+  &quot;item.neutrino.obsidian_apple&quot;:&quot;Obsidian Apple&quot;,
+  &quot;item.neutrino.obsidian_sword&quot;:&quot;Obsidian Sword&quot;,
+  &quot;itemGroup.obsidian_group&quot;: &quot;Obsidian Tab&quot;
+}
+</code></pre>
+<p>Then start the game, adjust to simplified Chinese, you should be able to see our items are translated.</p>
+<p><img src="localization/localization.assets/image-20201018105847036.png" alt="image-20201018105847036" /></p>
+<p>A list of all available language files can be found in the Wiki’s <a href="https://minecraft.gamepedia.com/Language#Available_languages">Language#Available languages</a>.</p>
 <h1><a class="header" href="#block" id="block">Block</a></h1>
 <h1><a class="header" href="#first-block" id="first-block">First Block</a></h1>
 <h1><a class="header" href="#block-and-blockstate" id="block-and-blockstate">Block and BlockState</a></h1>
