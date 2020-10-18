@@ -18,6 +18,7 @@
   - [Sword](./item/sword.md)
   - [Tool](./item/tool.md)
   - [Armor](./item/armor.md)
+  - [Item Property Override](./item/item-property-override.md)
 - [Localization](./localization/localization.md)
 - [Block](./block/intro.md)
   - [First Block](./block/first-block.md)
