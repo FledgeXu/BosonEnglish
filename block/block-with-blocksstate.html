@@ -159,7 +159,88 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#block-with-blockstate" id="block-with-blockstate">Block with BlockState</a></h1>
+                        <h1><a class="header" href="#block-with-blockstates" id="block-with-blockstates">Block with Blockstates</a></h1>
+<p>We have mentioned BlockState a bit before, but our first block is obviously stateless. In this section, we will use the obsidian cube as an example to create a block with state.</p>
+<p>First create a class called <code>ObsidianRubikCube</code> with the following content:</p>
+<pre><code class="language-java">public class ObsidianRubikCube extends Block {
+    private static IntegerProperty STATE = IntegerProperty.create(&quot;face&quot;, 0, 1);
+
+    public ObsidianRubikCube() {
+        super(Properties.create(Material.ROCK).hardnessAndResistance(5));
+        this.setDefaultState(this.stateContainer.getBaseState().with(STATE, 1));
+    }
+
+    @Override
+    protected void fillStateContainer(StateContainer.Builder&lt;Block, BlockState&gt; builder) {
+        builder.add(STATE);
+        super.fillStateContainer(builder);
+    }
+}
+</code></pre>
+<p>There are three things that are different from the box I created before. The first is:</p>
+<pre><code class="language-java">private static IntegerProperty STATE = IntegerProperty.create(&quot;face&quot;, 0, 1);
+</code></pre>
+<p>In this sentence, we created a new block state. As the name <code>IntegerProperty</code> implies, this is an integer type block state. In addition to the original version of <code>IntegerProperty</code>, it also implements <code>BooleanProperty</code> and <code>EnumProperty</code>, And the original version also implements many preset block states under the <code>BlockStateProperties</code> class, which can be used on demand. If these types do not meet your needs, you can also inherit <code>Property</code> to create a new type of block state yourself.</p>
+<pre><code class="language-java">IntegerProperty.create(&quot;face&quot;, 0, 1)
+</code></pre>
+<p>Means, the name of this block state is <code>face</code>, the minimum value is <code>0</code>, and the maximum value is <code>1</code>.</p>
+<pre><code class="language-java">@Override
+protected void fillStateContainer(StateContainer.Builder&lt;Block, BlockState&gt; builder) {
+  builder.add(STATE);
+  super.fillStateContainer(builder);
+}
+</code></pre>
+<p>hen we call the <code>add</code> method in the passed in <code>builder</code> variable in <code>fillStateContainer</code> to add a state to our block.</p>
+<p>Finally, we set the default state in the constructor (you don’t have to set it).</p>
+<pre><code class="language-java">this.setDefaultState(this.stateContainer.getBaseState().with(STATE, 1));
+</code></pre>
+<p>Register Block</p>
+<pre><code class="language-java">public static final RegistryObject&lt;Block&gt; obsidianRubikCube = BLOCKS.register(&quot;obsidian_rubik_cube&quot;, ObsidianRubikCube::new);
+</code></pre>
+<p>Register items</p>
+<pre><code class="language-java">public static final RegistryObject&lt;Item&gt; obsidianRubikCube = ITEMS.register(&quot;obsidian_rubik_cube&quot;, () -&gt; new BlockItem(BlockRegistry.obsidianRubikCube.get(), new Item.Properties().group(ModGroup.itemGroup)));
+</code></pre>
+<p>Next, create a json file with the same name as your block's registered name in the <code>blockstates</code> folder. We create <code>obsidian_rubik_cube.json</code> with the following content:</p>
+<pre><code class="language-json">{
+  &quot;variants&quot;: {
+    &quot;face=0&quot;: { &quot;model&quot;: &quot;boson:block/obsidian_rubik_cube_model_0&quot; },
+    &quot;face=1&quot;: { &quot;model&quot;: &quot;boson:block/obsidian_rubik_cube_model_1&quot; }
+  }
+}
+</code></pre>
+<p>As you can see, we have specified different models for different <code>face</code> values here, namely <code>obsidian_rubik_cube_model_0</code> and <code>obsidian_rubik_cube_model_1</code>. Please note that if you want to define multiple blockstate values, please separate them with commas without any spaces. For specific requirements, please refer to the chapter on <a href="https://minecraft.gamepedia.com/Model#Block_models">model</a> in the Wiki.</p>
+<p>Then we create two model files <code>obsidian_rubik_cube_model_0.json</code> and <code>obsidian_rubik_cube_model_1.json</code> under <code>models/block</code>.</p>
+<p><code>obsidian_rubik_cube_model_0.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;parent&quot;: &quot;block/cube_all&quot;,
+  &quot;textures&quot;: {
+    &quot;all&quot;: &quot;boson:block/obsidian_rubik_cube_texture_0&quot;
+  }
+}
+</code></pre>
+<p><code>obsidian_rubik_cube_model_1.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;parent&quot;: &quot;block/cube_all&quot;,
+  &quot;textures&quot;: {
+    &quot;all&quot;: &quot;boson:block/obsidian_rubik_cube_texture_1&quot;
+  }
+}
+</code></pre>
+<p>You can see that it loads two different textures.</p>
+<p>Then add the textures.</p>
+<p><code>obsidian_rubik_cube_texture_0.png</code></p>
+<img src="block-with-blocksstate.assets/obsidian_rubik_cube_texture_0.png" alt="obsidian_rubik_cube_texture_0" style="zoom:300%;" />
+<p><code>obsidian_rubik_cube_texture_1.png</code></p>
+<img src="block-with-blocksstate.assets/obsidian_rubik_cube_texture_1.png" alt="obsidian_rubik_cube_texture_1" style="zoom:300%;" />
+<p>Finally, add content to our item model <code>obsidian_rubik_cube</code>:</p>
+<pre><code class="language-json">{
+  &quot;parent&quot;: &quot;boson:block/obsidian_rubik_cube_model_1&quot;
+}
+</code></pre>
+<p>可以看到，随着我们用debug stick改变了方块的状态，方块的模型和材质也发生了改变。</p>
+<p><img src="block-with-blocksstate.assets/2020-09-28_19.51.12.png" alt="2020-09-28_19.51.12" /></p>
+<p><img src="block-with-blocksstate.assets/2020-09-28_19.52.32.png" alt="2020-09-28_19.52.32" /></p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/blockstate">Source Code</a></p>
 
                     </main>
 
