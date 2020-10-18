@@ -160,6 +160,47 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#render-type" id="render-type">Render Type</a></h1>
+<p>In this section, we will talk about the RenderType.</p>
+<p><img src="./rendertype.assets/blockrenderlayers.png" alt="img" /></p>
+<blockquote>
+<p>Picture from <a href="https://greyminecraftcoder.blogspot.com/2020/04/block-rendering-1144.html">TheGreyGhost Blog</a></p>
+</blockquote>
+<p>In Minecraft, there are four types of block rendering models, namely <code>translucent</code>, <code>solid</code>, <code>cutout</code> and <code>cutout_mipped</code>.</p>
+<p>The general difference can be seen by everyone. Here we are going to detail the difference between <code>translucent</code> and <code>cutout*</code>. The difference between them is actually very simple, <code>translucent</code> is translucent, and <code>cutout*</code> is either fully transparent or opaque. You can pay attention to the difference between the white part on the glass and the white part on the ice cube.</p>
+<p>The direct difference between <code>cutout</code> and <code>cutout_mipped</code> involves game optimization. <code>cutout_mipped</code> is <code>cutout</code> with Mipmapping enabled.</p>
+<blockquote>
+<p>In <a href="https://en.wikipedia.org/wiki/Computer_graphics">computer graphics</a>, <strong>mipmaps</strong> (also <strong>MIP maps</strong>) or <strong>pyramids</strong>[<a href="https://en.wikipedia.org/wiki/Mipmap#cite_note-1">1]</a>[<a href="https://en.wikipedia.org/wiki/Mipmap#cite_note-2">2]</a>[<a href="https://en.wikipedia.org/wiki/Mipmap#cite_note-3">3]</a> are pre-calculated, <a href="https://en.wikipedia.org/wiki/Optimization_(computer_science)">optimized</a> sequences of <a href="https://en.wikipedia.org/wiki/Digital_image">images</a>, each of which is a progressively lower <a href="https://en.wikipedia.org/wiki/Display_resolution">resolution</a> representation of the previous. The height and width of each image, or level, in the mipmap is a <a href="https://en.wikipedia.org/wiki/Power_of_two">power of two</a> smaller than the previous level. Mipmaps do not have to be square. They are intended to increase <a href="https://en.wikipedia.org/wiki/Rendering_(computer_graphics)">rendering</a> speed and reduce <a href="https://en.wikipedia.org/wiki/Aliasing">aliasing</a> artifacts. A high-resolution mipmap image is used for high-density samples, such as for objects close to the camera; lower-resolution images are used as the object appears farther away. This is a more efficient way of downfiltering (<a href="https://en.wikipedia.org/wiki/Magnification">minifying</a>) a <a href="https://en.wikipedia.org/wiki/Texture_mapping">texture</a> than sampling all <a href="https://en.wikipedia.org/wiki/Texel_(graphics)">texels</a> in the original texture that would contribute to a screen <a href="https://en.wikipedia.org/wiki/Pixel">pixel</a>; it is faster to take a constant number of samples from the appropriately downfiltered textures. Mipmaps are widely used in 3D <a href="https://en.wikipedia.org/wiki/Computer_game">computer games</a>, <a href="https://en.wikipedia.org/wiki/Flight_simulator">flight simulators</a>, other 3D imaging systems for <a href="https://en.wikipedia.org/wiki/Texture_filtering">texture filtering</a> and 2D as well as 3D <a href="https://en.wikipedia.org/wiki/Geographical_information_system">GIS software</a>. Their use is known as <strong>mipmapping</strong>. The letters <em>MIP</em> in the name are an acronym of the <a href="https://en.wikipedia.org/wiki/Latin">Latin</a> phrase <em>multum in parvo</em>, meaning &quot;much in little&quot;.[<a href="https://en.wikipedia.org/wiki/Mipmap#cite_note-staff-4">4]</a></p>
+<p>Since mipmaps, by definition, are pre-<a href="https://en.wikipedia.org/wiki/Memory_management">allocated</a>, additional <a href="https://en.wikipedia.org/wiki/Computer_data_storage">storage space</a> is required to take advantage of them. They are also related to <a href="https://en.wikipedia.org/wiki/Wavelet_compression">wavelet compression</a>. Mipmap textures are used in 3D scenes to decrease the time required to render a scene. They also improve <a href="https://en.wikipedia.org/wiki/Image_quality">image quality</a> by reducing aliasing and <a href="https://en.wikipedia.org/wiki/Moir%C3%A9_pattern">Moiré patterns</a> that occur at large viewing distances,[<a href="https://en.wikipedia.org/wiki/Mipmap#cite_note-5">5]</a> at the cost of <a href="https://en.wikipedia.org/wiki/1/4_%2B_1/16_%2B_1/64_%2B_1/256_%2B_%E2%8B%AF">33%</a> more memory per texture.</p>
+<p>——<a href="https://en.wikipedia.org/wiki/Mipmap">Wikipedia</a></p>
+</blockquote>
+<p>We will take a glass jar as an example to teach you how to set the RenderType of the block.</p>
+<p>First, let's create the Block, <code>GlassJar.java</code>:</p>
+<pre><code class="language-java">public class GlassJar extends Block {
+    public GlassJar() {
+        super(Properties.create(Material.ROCK).hardnessAndResistance(5).notSolid());
+    }
+}
+</code></pre>
+<p>Of course don't forget to register.</p>
+<pre><code class="language-java">public static final RegistryObject&lt;GlassJar&gt; glassJar = BLOCKS.register(&quot;glass_jar&quot;, GlassJar::new);
+</code></pre>
+<p>接下来就是设置我们方块的RenderType的地方，<code>RenderTypeRegistry</code>：</p>
+<pre><code class="language-java">@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+public class RenderTypeRegistry {
+    @SubscribeEvent
+    public static void onRenderTypeSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -&gt; {
+            RenderTypeLookup.setRenderLayer(BlockRegistry.glassJar.get(), RenderType.getTranslucent());
+        });
+    }
+}
+</code></pre>
+<p>Because rendering-related content happens on the client side, we register our RenderType under the <code>FMLClientSetupEvent</code> event, and because the Mod is now loaded in parallel, we have to put our event processing in <code>event.enqueueWork</code> in.</p>
+<p>Here we call <code>RenderTypeLookup.setRenderLayer</code> to set the RenderType of our block, <code>RenderType.getTranslucent()</code> specifies that our RenderType is <code>translucent</code>, under the <code>RenderType</code> class there are all the original RenderTypes, you can also customize RenderType thus uses advanced features such as custom shaders.</p>
+<p>Please see Github for specific models and materials.</p>
+<p>Open the game and you can see our glass jar.</p>
+<p><img src="rendertype.assets/image-20200625163139129.png" alt="image-20200625163139129" /></p>
+<p><a href="https://github.com/FledgeXu/NeutrinoSourceCode/tree/master/src/main/java/com/tutorial/neutrino/special_render_type">Source Code</a></p>
 
                     </main>
 

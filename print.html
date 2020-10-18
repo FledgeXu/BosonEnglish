@@ -1085,7 +1085,267 @@ protected void fillStateContainer(StateContainer.Builder&lt;Block, BlockState&gt
 <p><img src="block/block-with-blocksstate.assets/2020-09-28_19.52.32.png" alt="2020-09-28_19.52.32" /></p>
 <p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/blockstate">Source Code</a></p>
 <h1><a class="header" href="#not-solid-block-and-custom-model" id="not-solid-block-and-custom-model">Not Solid Block and custom model</a></h1>
+<p>In this section, we will create a transparent block with a special shape. Here we take the obsidian frame as an example.</p>
+<p>First we create a class called <code>ObsidianFrame</code> with the following content:</p>
+<pre><code class="language-java">public class ObsidianFrame extends Block implements IWaterLoggable {
+    private static final VoxelShape shape;
+    private static final BooleanProperty WATERLOGGED = BooleanProperty.create(&quot;waterlogged&quot;);
+
+    static {
+        VoxelShape base = Block.makeCuboidShape(0, 0, 0, 16, 1, 16);
+        VoxelShape column1 = Block.makeCuboidShape(0, 1, 0, 1, 15, 1);
+        VoxelShape column2 = Block.makeCuboidShape(15, 1, 0, 16, 15, 1);
+        VoxelShape column3 = Block.makeCuboidShape(0, 1, 15, 1, 15, 16);
+        VoxelShape column4 = Block.makeCuboidShape(15, 1, 15, 16, 15, 16);
+        VoxelShape top = Block.makeCuboidShape(0, 15, 0, 16, 16, 16);
+        shape = VoxelShapes.or(base, column1, column2, column3, column4, top);
+    }
+
+    public ObsidianFrame() {
+        super(Properties.create(Material.ROCK).hardnessAndResistance(5).notSolid());
+        this.setDefaultState(this.stateContainer.getBaseState().with(WATERLOGGED, false));
+    }
+
+    @Override
+    protected void fillStateContainer(StateContainer.Builder&lt;Block, BlockState&gt; builder) {
+        builder.add(WATERLOGGED);
+        super.fillStateContainer(builder);
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+        return shape;
+    }
+
+    @Nullable
+    @Override
+    public BlockState getStateForPlacement(BlockItemUseContext context) {
+        BlockPos blockpos = context.getPos();
+        BlockState blockstate = context.getWorld().getBlockState(blockpos);
+        if (blockstate.isIn(this)) {
+            return blockstate.with(WATERLOGGED, Boolean.valueOf(false));
+        } else {
+            FluidState fluidstate = context.getWorld().getFluidState(blockpos);
+            BlockState blockstate1 = this.getDefaultState().with(WATERLOGGED, Boolean.valueOf(fluidstate.getFluid() == Fluids.WATER));
+            return blockstate1;
+        }
+    }
+
+    public BlockState updatePostPlacement(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos) {
+        if (stateIn.get(WATERLOGGED)) {
+            worldIn.getPendingFluidTicks().scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickRate(worldIn));
+        }
+        return super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+    }
+
+    @Override
+    public FluidState getFluidState(BlockState state) {
+        return state.get(WATERLOGGED) ? Fluids.WATER.getStillFluidState(false) : super.getFluidState(state);
+    }
+}
+</code></pre>
+<p>At the top we created a <code>VoxelShape</code>, we will return this shape in the <code>getShape</code> method. This <code>VoxelShape</code> is the collision box of our block. Unfortunately, the collision box of Minecraft can only be composed of blocks. The size of this box is <code>16*16*16</code>, so we created a series of cuboids and cubes by ourselves in the static code block to form the collision box of our block. The 6 parameters of <code>Block.makeCuboidShape</code> are respectively Is the XYZ of the starting point and the XYZ of the ending point. Finally, we put these things together using the <code>or</code> method of <code>VoxelShapes</code>. There are many useful space operation methods under <code>VoxelShapes</code>, please choose by yourself. If you don't set a suitable collision box for your block, the space inside your block will appear very dark.</p>
+<p>It can be seen that the most special thing here is that the <code>notSoild</code> method is called. This method is to inform Minecraft that our block is not a &quot;solid&quot; block and needs special treatment. The reason for this is that there are so many blocks in the world of Minecraft. If every face of the block has to be rendered, including those that are occluded and blocks that are blocked, it will cost a lot of performance, so for optimization Considering that, Minecraft will only render those surfaces that are not blocked. The role of <code>noSoild</code> is to tell Minecraft to render the faces that are blocked by this block.</p>
+<p>If this is not turned on, this effect will appear.</p>
+<p><img src="block/not-solid-block-and-custom-model.assets/image-20200428204119348.png" alt="image-20200428204119348" /></p>
+<p>If you are interested in Minecraft block rendering-related content, you can read this blog <a href="https://greyminecraftcoder.blogspot.com/2020/04/block-rendering-1144.html">article</a> and other articles under this blog.</p>
+<p>After 1.13, Minecraft added the “water logged&quot; feature. Many of the original incomplete blocks have this feature, and we can also add this feature to our blocks.</p>
+<p>First, you need to make your block implement the interface <code>IWaterLoggable</code>:</p>
+<pre><code class="language-java">public class ObsidianFrame extends Block implements IWaterLoggable
+</code></pre>
+<p>Next you have to add a Boolean BlockState called <code>waterlogged</code> to your block.</p>
+<pre><code class="language-java">private static final BooleanProperty WATERLOGGED = BooleanProperty.create(&quot;waterlogged&quot;);
+
+public ObsidianFrame() {
+  super(Properties.create(Material.ROCK).hardnessAndResistance(5).notSolid());
+  this.setDefaultState(this.stateContainer.getBaseState().with(WATERLOGGED, false));
+}
+
+@Override
+protected void fillStateContainer(StateContainer.Builder&lt;Block, BlockState&gt; builder) {
+  builder.add(WATERLOGGED);
+  super.fillStateContainer(builder);
+}
+</code></pre>
+<p>Next, implement the following block, the code is copied from the original half brick.</p>
+<pre><code class="language-java">@Nullable
+@Override
+public BlockState getStateForPlacement(BlockItemUseContext context) {
+  BlockPos blockpos = context.getPos();
+  BlockState blockstate = context.getWorld().getBlockState(blockpos);
+  if (blockstate.isIn(this)) {
+    return blockstate.with(WATERLOGGED, Boolean.valueOf(false));
+  } else {
+    FluidState fluidstate = context.getWorld().getFluidState(blockpos);
+    BlockState blockstate1 = this.getDefaultState().with(WATERLOGGED, Boolean.valueOf(fluidstate.getFluid() == Fluids.WATER));
+    return blockstate1;
+  }
+}
+
+public BlockState updatePostPlacement(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos) {
+  if (stateIn.get(WATERLOGGED)) {
+    worldIn.getPendingFluidTicks().scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickRate(worldIn));
+  }
+  return super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+}
+
+@Override
+public FluidState getFluidState(BlockState state) {
+  return state.get(WATERLOGGED) ? Fluids.WATER.getStillFluidState(false) : super.getFluidState(state);
+}
+</code></pre>
+<p>But overall, the current design of the water logged block is more like a hack, so these implementations are a bit inexplicable...</p>
+<p>Register Block:</p>
+<pre><code class="language-java">public static final RegistryObject&lt;Block&gt; obsidianFrame = BLOCKS.register(&quot;obsidian_frame&quot;, ObsidianFrame::new);
+</code></pre>
+<p>Register Item:</p>
+<pre><code class="language-java">public static RegistryObject&lt;Item&gt; obsidianFrame = ITEMS.register(&quot;obsidian_frame&quot;, () -&gt; new BlockItem(BlockRegistry.obsidianFrame.get(), new Item.Properties().group(ModGroup.itemGroup)));
+</code></pre>
+<p>Then there is the blockstate file <code>obsidian_frame.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;variants&quot;: {
+    &quot;&quot;: { &quot;model&quot;: &quot;bosons:block/obsidian_frame&quot; }
+  }
+}
+</code></pre>
+<p>Model file <code>obsidian_frame.json</code>:</p>
+<pre><code class="language-json">{
+	&quot;texture_size&quot;: [64, 64],
+	&quot;textures&quot;: {
+		&quot;0&quot;: &quot;boson:block/obsidian_frame&quot;,
+		&quot;particle&quot;: &quot;boson:block/obsidian_frame&quot;
+	},
+	&quot;elements&quot;: [
+		{
+			&quot;from&quot;: [0, 0, 0],
+			&quot;to&quot;: [16, 1, 16],
+			&quot;faces&quot;: {
+				&quot;north&quot;: {&quot;uv&quot;: [4, 8.25, 8, 8.5], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;east&quot;: {&quot;uv&quot;: [0, 8.25, 4, 8.5], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;south&quot;: {&quot;uv&quot;: [12, 8.25, 16, 8.5], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;west&quot;: {&quot;uv&quot;: [8, 8.25, 12, 8.5], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;up&quot;: {&quot;uv&quot;: [8, 8.25, 4, 4.25], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;down&quot;: {&quot;uv&quot;: [12, 4.25, 8, 8.25], &quot;texture&quot;: &quot;#0&quot;}
+			}
+		},
+		{
+			&quot;from&quot;: [0, 15, 0],
+			&quot;to&quot;: [16, 16, 16],
+			&quot;faces&quot;: {
+				&quot;north&quot;: {&quot;uv&quot;: [4, 4, 8, 4.25], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;east&quot;: {&quot;uv&quot;: [0, 4, 4, 4.25], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;south&quot;: {&quot;uv&quot;: [12, 4, 16, 4.25], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;west&quot;: {&quot;uv&quot;: [8, 4, 12, 4.25], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;up&quot;: {&quot;uv&quot;: [8, 4, 4, 0], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;down&quot;: {&quot;uv&quot;: [12, 0, 8, 4], &quot;texture&quot;: &quot;#0&quot;}
+			}
+		},
+		{
+			&quot;from&quot;: [0, 1, 0],
+			&quot;to&quot;: [1, 15, 1],
+			&quot;faces&quot;: {
+				&quot;north&quot;: {&quot;uv&quot;: [2.25, 0.25, 2.5, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;east&quot;: {&quot;uv&quot;: [2, 0.25, 2.25, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;south&quot;: {&quot;uv&quot;: [2.75, 0.25, 3, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;west&quot;: {&quot;uv&quot;: [2.5, 0.25, 2.75, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;up&quot;: {&quot;uv&quot;: [2.5, 0.25, 2.25, 0], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;down&quot;: {&quot;uv&quot;: [2.75, 0, 2.5, 0.25], &quot;texture&quot;: &quot;#0&quot;}
+			}
+		},
+		{
+			&quot;from&quot;: [15, 1, 0],
+			&quot;to&quot;: [16, 15, 1],
+			&quot;faces&quot;: {
+				&quot;north&quot;: {&quot;uv&quot;: [1.25, 0.25, 1.5, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;east&quot;: {&quot;uv&quot;: [1, 0.25, 1.25, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;south&quot;: {&quot;uv&quot;: [1.75, 0.25, 2, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;west&quot;: {&quot;uv&quot;: [1.5, 0.25, 1.75, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;up&quot;: {&quot;uv&quot;: [1.5, 0.25, 1.25, 0], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;down&quot;: {&quot;uv&quot;: [1.75, 0, 1.5, 0.25], &quot;texture&quot;: &quot;#0&quot;}
+			}
+		},
+		{
+			&quot;from&quot;: [0, 1, 15],
+			&quot;to&quot;: [1, 15, 16],
+			&quot;faces&quot;: {
+				&quot;north&quot;: {&quot;uv&quot;: [0.25, 0.25, 0.5, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;east&quot;: {&quot;uv&quot;: [0, 0.25, 0.25, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;south&quot;: {&quot;uv&quot;: [0.75, 0.25, 1, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;west&quot;: {&quot;uv&quot;: [0.5, 0.25, 0.75, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;up&quot;: {&quot;uv&quot;: [0.5, 0.25, 0.25, 0], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;down&quot;: {&quot;uv&quot;: [0.75, 0, 0.5, 0.25], &quot;texture&quot;: &quot;#0&quot;}
+			}
+		},
+		{
+			&quot;from&quot;: [15, 1, 15],
+			&quot;to&quot;: [16, 15, 16],
+			&quot;faces&quot;: {
+				&quot;north&quot;: {&quot;uv&quot;: [3.25, 0.25, 3.5, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;east&quot;: {&quot;uv&quot;: [3, 0.25, 3.25, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;south&quot;: {&quot;uv&quot;: [3.75, 0.25, 4, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;west&quot;: {&quot;uv&quot;: [3.5, 0.25, 3.75, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;up&quot;: {&quot;uv&quot;: [3.5, 0.25, 3.25, 0], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;down&quot;: {&quot;uv&quot;: [3.75, 0, 3.5, 0.25], &quot;texture&quot;: &quot;#0&quot;}
+			}
+		}
+	]
+}
+</code></pre>
+<p>The texture file <code>obsidian_frame.png</code>:</p>
+<img src="block/not-solid-block-and-custom-model.assets/obsidian_frame.png" alt="obsidian_frame" style="zoom:300%;" />
+<p>Here my models and materials are made with BlockBench.</p>
+<p>Item model <code>obsidian_frame.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;parent&quot;: &quot;boson:block/obsidian_frame&quot;
+}
+</code></pre>
+<p>Open the game, you should be able to see our obsidian frame.</p>
+<p><img src="block/not-solid-block-and-custom-model.assets/image-20200428214022814.png" alt="image-20200428214022814" /></p>
+<p>And water logged block</p>
+<p><img src="block/not-solid-block-and-custom-model.assets/image-20201017113953896.png" alt="image-20201017113953896" /></p>
+<p><a href="https://github.com/FledgeXu/NeutrinoSourceCode/tree/master/src/main/java/com/tutorial/neutrino/nonesoildblock">Source Code</a></p>
 <h1><a class="header" href="#render-type" id="render-type">Render Type</a></h1>
+<p>In this section, we will talk about the RenderType.</p>
+<p><img src="block/./rendertype.assets/blockrenderlayers.png" alt="img" /></p>
+<blockquote>
+<p>Picture from <a href="https://greyminecraftcoder.blogspot.com/2020/04/block-rendering-1144.html">TheGreyGhost Blog</a></p>
+</blockquote>
+<p>In Minecraft, there are four types of block rendering models, namely <code>translucent</code>, <code>solid</code>, <code>cutout</code> and <code>cutout_mipped</code>.</p>
+<p>The general difference can be seen by everyone. Here we are going to detail the difference between <code>translucent</code> and <code>cutout*</code>. The difference between them is actually very simple, <code>translucent</code> is translucent, and <code>cutout*</code> is either fully transparent or opaque. You can pay attention to the difference between the white part on the glass and the white part on the ice cube.</p>
+<p>The direct difference between <code>cutout</code> and <code>cutout_mipped</code> involves game optimization. <code>cutout_mipped</code> is <code>cutout</code> with Mipmapping enabled.</p>
+<blockquote>
+<p>In <a href="https://en.wikipedia.org/wiki/Computer_graphics">computer graphics</a>, <strong>mipmaps</strong> (also <strong>MIP maps</strong>) or <strong>pyramids</strong>[<a href="https://en.wikipedia.org/wiki/Mipmap#cite_note-1">1]</a>[<a href="https://en.wikipedia.org/wiki/Mipmap#cite_note-2">2]</a>[<a href="https://en.wikipedia.org/wiki/Mipmap#cite_note-3">3]</a> are pre-calculated, <a href="https://en.wikipedia.org/wiki/Optimization_(computer_science)">optimized</a> sequences of <a href="https://en.wikipedia.org/wiki/Digital_image">images</a>, each of which is a progressively lower <a href="https://en.wikipedia.org/wiki/Display_resolution">resolution</a> representation of the previous. The height and width of each image, or level, in the mipmap is a <a href="https://en.wikipedia.org/wiki/Power_of_two">power of two</a> smaller than the previous level. Mipmaps do not have to be square. They are intended to increase <a href="https://en.wikipedia.org/wiki/Rendering_(computer_graphics)">rendering</a> speed and reduce <a href="https://en.wikipedia.org/wiki/Aliasing">aliasing</a> artifacts. A high-resolution mipmap image is used for high-density samples, such as for objects close to the camera; lower-resolution images are used as the object appears farther away. This is a more efficient way of downfiltering (<a href="https://en.wikipedia.org/wiki/Magnification">minifying</a>) a <a href="https://en.wikipedia.org/wiki/Texture_mapping">texture</a> than sampling all <a href="https://en.wikipedia.org/wiki/Texel_(graphics)">texels</a> in the original texture that would contribute to a screen <a href="https://en.wikipedia.org/wiki/Pixel">pixel</a>; it is faster to take a constant number of samples from the appropriately downfiltered textures. Mipmaps are widely used in 3D <a href="https://en.wikipedia.org/wiki/Computer_game">computer games</a>, <a href="https://en.wikipedia.org/wiki/Flight_simulator">flight simulators</a>, other 3D imaging systems for <a href="https://en.wikipedia.org/wiki/Texture_filtering">texture filtering</a> and 2D as well as 3D <a href="https://en.wikipedia.org/wiki/Geographical_information_system">GIS software</a>. Their use is known as <strong>mipmapping</strong>. The letters <em>MIP</em> in the name are an acronym of the <a href="https://en.wikipedia.org/wiki/Latin">Latin</a> phrase <em>multum in parvo</em>, meaning &quot;much in little&quot;.[<a href="https://en.wikipedia.org/wiki/Mipmap#cite_note-staff-4">4]</a></p>
+<p>Since mipmaps, by definition, are pre-<a href="https://en.wikipedia.org/wiki/Memory_management">allocated</a>, additional <a href="https://en.wikipedia.org/wiki/Computer_data_storage">storage space</a> is required to take advantage of them. They are also related to <a href="https://en.wikipedia.org/wiki/Wavelet_compression">wavelet compression</a>. Mipmap textures are used in 3D scenes to decrease the time required to render a scene. They also improve <a href="https://en.wikipedia.org/wiki/Image_quality">image quality</a> by reducing aliasing and <a href="https://en.wikipedia.org/wiki/Moir%C3%A9_pattern">Moiré patterns</a> that occur at large viewing distances,[<a href="https://en.wikipedia.org/wiki/Mipmap#cite_note-5">5]</a> at the cost of <a href="https://en.wikipedia.org/wiki/1/4_%2B_1/16_%2B_1/64_%2B_1/256_%2B_%E2%8B%AF">33%</a> more memory per texture.</p>
+<p>——<a href="https://en.wikipedia.org/wiki/Mipmap">Wikipedia</a></p>
+</blockquote>
+<p>We will take a glass jar as an example to teach you how to set the RenderType of the block.</p>
+<p>First, let's create the Block, <code>GlassJar.java</code>:</p>
+<pre><code class="language-java">public class GlassJar extends Block {
+    public GlassJar() {
+        super(Properties.create(Material.ROCK).hardnessAndResistance(5).notSolid());
+    }
+}
+</code></pre>
+<p>Of course don't forget to register.</p>
+<pre><code class="language-java">public static final RegistryObject&lt;GlassJar&gt; glassJar = BLOCKS.register(&quot;glass_jar&quot;, GlassJar::new);
+</code></pre>
+<p>接下来就是设置我们方块的RenderType的地方，<code>RenderTypeRegistry</code>：</p>
+<pre><code class="language-java">@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+public class RenderTypeRegistry {
+    @SubscribeEvent
+    public static void onRenderTypeSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -&gt; {
+            RenderTypeLookup.setRenderLayer(BlockRegistry.glassJar.get(), RenderType.getTranslucent());
+        });
+    }
+}
+</code></pre>
+<p>Because rendering-related content happens on the client side, we register our RenderType under the <code>FMLClientSetupEvent</code> event, and because the Mod is now loaded in parallel, we have to put our event processing in <code>event.enqueueWork</code> in.</p>
+<p>Here we call <code>RenderTypeLookup.setRenderLayer</code> to set the RenderType of our block, <code>RenderType.getTranslucent()</code> specifies that our RenderType is <code>translucent</code>, under the <code>RenderType</code> class there are all the original RenderTypes, you can also customize RenderType thus uses advanced features such as custom shaders.</p>
+<p>Please see Github for specific models and materials.</p>
+<p>Open the game and you can see our glass jar.</p>
+<p><img src="block/rendertype.assets/image-20200625163139129.png" alt="image-20200625163139129" /></p>
+<p><a href="https://github.com/FledgeXu/NeutrinoSourceCode/tree/master/src/main/java/com/tutorial/neutrino/special_render_type">Source Code</a></p>
 <h1><a class="header" href="#special-model" id="special-model">Special Model</a></h1>
 <h1><a class="header" href="#obj-model" id="obj-model">Obj Model</a></h1>
 <h1><a class="header" href="#tileentity" id="tileentity">TileEntity</a></h1>

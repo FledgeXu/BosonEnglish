@@ -160,6 +160,225 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#not-solid-block-and-custom-model" id="not-solid-block-and-custom-model">Not Solid Block and custom model</a></h1>
+<p>In this section, we will create a transparent block with a special shape. Here we take the obsidian frame as an example.</p>
+<p>First we create a class called <code>ObsidianFrame</code> with the following content:</p>
+<pre><code class="language-java">public class ObsidianFrame extends Block implements IWaterLoggable {
+    private static final VoxelShape shape;
+    private static final BooleanProperty WATERLOGGED = BooleanProperty.create(&quot;waterlogged&quot;);
+
+    static {
+        VoxelShape base = Block.makeCuboidShape(0, 0, 0, 16, 1, 16);
+        VoxelShape column1 = Block.makeCuboidShape(0, 1, 0, 1, 15, 1);
+        VoxelShape column2 = Block.makeCuboidShape(15, 1, 0, 16, 15, 1);
+        VoxelShape column3 = Block.makeCuboidShape(0, 1, 15, 1, 15, 16);
+        VoxelShape column4 = Block.makeCuboidShape(15, 1, 15, 16, 15, 16);
+        VoxelShape top = Block.makeCuboidShape(0, 15, 0, 16, 16, 16);
+        shape = VoxelShapes.or(base, column1, column2, column3, column4, top);
+    }
+
+    public ObsidianFrame() {
+        super(Properties.create(Material.ROCK).hardnessAndResistance(5).notSolid());
+        this.setDefaultState(this.stateContainer.getBaseState().with(WATERLOGGED, false));
+    }
+
+    @Override
+    protected void fillStateContainer(StateContainer.Builder&lt;Block, BlockState&gt; builder) {
+        builder.add(WATERLOGGED);
+        super.fillStateContainer(builder);
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+        return shape;
+    }
+
+    @Nullable
+    @Override
+    public BlockState getStateForPlacement(BlockItemUseContext context) {
+        BlockPos blockpos = context.getPos();
+        BlockState blockstate = context.getWorld().getBlockState(blockpos);
+        if (blockstate.isIn(this)) {
+            return blockstate.with(WATERLOGGED, Boolean.valueOf(false));
+        } else {
+            FluidState fluidstate = context.getWorld().getFluidState(blockpos);
+            BlockState blockstate1 = this.getDefaultState().with(WATERLOGGED, Boolean.valueOf(fluidstate.getFluid() == Fluids.WATER));
+            return blockstate1;
+        }
+    }
+
+    public BlockState updatePostPlacement(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos) {
+        if (stateIn.get(WATERLOGGED)) {
+            worldIn.getPendingFluidTicks().scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickRate(worldIn));
+        }
+        return super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+    }
+
+    @Override
+    public FluidState getFluidState(BlockState state) {
+        return state.get(WATERLOGGED) ? Fluids.WATER.getStillFluidState(false) : super.getFluidState(state);
+    }
+}
+</code></pre>
+<p>At the top we created a <code>VoxelShape</code>, we will return this shape in the <code>getShape</code> method. This <code>VoxelShape</code> is the collision box of our block. Unfortunately, the collision box of Minecraft can only be composed of blocks. The size of this box is <code>16*16*16</code>, so we created a series of cuboids and cubes by ourselves in the static code block to form the collision box of our block. The 6 parameters of <code>Block.makeCuboidShape</code> are respectively Is the XYZ of the starting point and the XYZ of the ending point. Finally, we put these things together using the <code>or</code> method of <code>VoxelShapes</code>. There are many useful space operation methods under <code>VoxelShapes</code>, please choose by yourself. If you don't set a suitable collision box for your block, the space inside your block will appear very dark.</p>
+<p>It can be seen that the most special thing here is that the <code>notSoild</code> method is called. This method is to inform Minecraft that our block is not a &quot;solid&quot; block and needs special treatment. The reason for this is that there are so many blocks in the world of Minecraft. If every face of the block has to be rendered, including those that are occluded and blocks that are blocked, it will cost a lot of performance, so for optimization Considering that, Minecraft will only render those surfaces that are not blocked. The role of <code>noSoild</code> is to tell Minecraft to render the faces that are blocked by this block.</p>
+<p>If this is not turned on, this effect will appear.</p>
+<p><img src="not-solid-block-and-custom-model.assets/image-20200428204119348.png" alt="image-20200428204119348" /></p>
+<p>If you are interested in Minecraft block rendering-related content, you can read this blog <a href="https://greyminecraftcoder.blogspot.com/2020/04/block-rendering-1144.html">article</a> and other articles under this blog.</p>
+<p>After 1.13, Minecraft added the “water logged&quot; feature. Many of the original incomplete blocks have this feature, and we can also add this feature to our blocks.</p>
+<p>First, you need to make your block implement the interface <code>IWaterLoggable</code>:</p>
+<pre><code class="language-java">public class ObsidianFrame extends Block implements IWaterLoggable
+</code></pre>
+<p>Next you have to add a Boolean BlockState called <code>waterlogged</code> to your block.</p>
+<pre><code class="language-java">private static final BooleanProperty WATERLOGGED = BooleanProperty.create(&quot;waterlogged&quot;);
+
+public ObsidianFrame() {
+  super(Properties.create(Material.ROCK).hardnessAndResistance(5).notSolid());
+  this.setDefaultState(this.stateContainer.getBaseState().with(WATERLOGGED, false));
+}
+
+@Override
+protected void fillStateContainer(StateContainer.Builder&lt;Block, BlockState&gt; builder) {
+  builder.add(WATERLOGGED);
+  super.fillStateContainer(builder);
+}
+</code></pre>
+<p>Next, implement the following block, the code is copied from the original half brick.</p>
+<pre><code class="language-java">@Nullable
+@Override
+public BlockState getStateForPlacement(BlockItemUseContext context) {
+  BlockPos blockpos = context.getPos();
+  BlockState blockstate = context.getWorld().getBlockState(blockpos);
+  if (blockstate.isIn(this)) {
+    return blockstate.with(WATERLOGGED, Boolean.valueOf(false));
+  } else {
+    FluidState fluidstate = context.getWorld().getFluidState(blockpos);
+    BlockState blockstate1 = this.getDefaultState().with(WATERLOGGED, Boolean.valueOf(fluidstate.getFluid() == Fluids.WATER));
+    return blockstate1;
+  }
+}
+
+public BlockState updatePostPlacement(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos) {
+  if (stateIn.get(WATERLOGGED)) {
+    worldIn.getPendingFluidTicks().scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickRate(worldIn));
+  }
+  return super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+}
+
+@Override
+public FluidState getFluidState(BlockState state) {
+  return state.get(WATERLOGGED) ? Fluids.WATER.getStillFluidState(false) : super.getFluidState(state);
+}
+</code></pre>
+<p>But overall, the current design of the water logged block is more like a hack, so these implementations are a bit inexplicable...</p>
+<p>Register Block:</p>
+<pre><code class="language-java">public static final RegistryObject&lt;Block&gt; obsidianFrame = BLOCKS.register(&quot;obsidian_frame&quot;, ObsidianFrame::new);
+</code></pre>
+<p>Register Item:</p>
+<pre><code class="language-java">public static RegistryObject&lt;Item&gt; obsidianFrame = ITEMS.register(&quot;obsidian_frame&quot;, () -&gt; new BlockItem(BlockRegistry.obsidianFrame.get(), new Item.Properties().group(ModGroup.itemGroup)));
+</code></pre>
+<p>Then there is the blockstate file <code>obsidian_frame.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;variants&quot;: {
+    &quot;&quot;: { &quot;model&quot;: &quot;bosons:block/obsidian_frame&quot; }
+  }
+}
+</code></pre>
+<p>Model file <code>obsidian_frame.json</code>:</p>
+<pre><code class="language-json">{
+	&quot;texture_size&quot;: [64, 64],
+	&quot;textures&quot;: {
+		&quot;0&quot;: &quot;boson:block/obsidian_frame&quot;,
+		&quot;particle&quot;: &quot;boson:block/obsidian_frame&quot;
+	},
+	&quot;elements&quot;: [
+		{
+			&quot;from&quot;: [0, 0, 0],
+			&quot;to&quot;: [16, 1, 16],
+			&quot;faces&quot;: {
+				&quot;north&quot;: {&quot;uv&quot;: [4, 8.25, 8, 8.5], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;east&quot;: {&quot;uv&quot;: [0, 8.25, 4, 8.5], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;south&quot;: {&quot;uv&quot;: [12, 8.25, 16, 8.5], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;west&quot;: {&quot;uv&quot;: [8, 8.25, 12, 8.5], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;up&quot;: {&quot;uv&quot;: [8, 8.25, 4, 4.25], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;down&quot;: {&quot;uv&quot;: [12, 4.25, 8, 8.25], &quot;texture&quot;: &quot;#0&quot;}
+			}
+		},
+		{
+			&quot;from&quot;: [0, 15, 0],
+			&quot;to&quot;: [16, 16, 16],
+			&quot;faces&quot;: {
+				&quot;north&quot;: {&quot;uv&quot;: [4, 4, 8, 4.25], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;east&quot;: {&quot;uv&quot;: [0, 4, 4, 4.25], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;south&quot;: {&quot;uv&quot;: [12, 4, 16, 4.25], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;west&quot;: {&quot;uv&quot;: [8, 4, 12, 4.25], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;up&quot;: {&quot;uv&quot;: [8, 4, 4, 0], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;down&quot;: {&quot;uv&quot;: [12, 0, 8, 4], &quot;texture&quot;: &quot;#0&quot;}
+			}
+		},
+		{
+			&quot;from&quot;: [0, 1, 0],
+			&quot;to&quot;: [1, 15, 1],
+			&quot;faces&quot;: {
+				&quot;north&quot;: {&quot;uv&quot;: [2.25, 0.25, 2.5, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;east&quot;: {&quot;uv&quot;: [2, 0.25, 2.25, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;south&quot;: {&quot;uv&quot;: [2.75, 0.25, 3, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;west&quot;: {&quot;uv&quot;: [2.5, 0.25, 2.75, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;up&quot;: {&quot;uv&quot;: [2.5, 0.25, 2.25, 0], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;down&quot;: {&quot;uv&quot;: [2.75, 0, 2.5, 0.25], &quot;texture&quot;: &quot;#0&quot;}
+			}
+		},
+		{
+			&quot;from&quot;: [15, 1, 0],
+			&quot;to&quot;: [16, 15, 1],
+			&quot;faces&quot;: {
+				&quot;north&quot;: {&quot;uv&quot;: [1.25, 0.25, 1.5, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;east&quot;: {&quot;uv&quot;: [1, 0.25, 1.25, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;south&quot;: {&quot;uv&quot;: [1.75, 0.25, 2, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;west&quot;: {&quot;uv&quot;: [1.5, 0.25, 1.75, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;up&quot;: {&quot;uv&quot;: [1.5, 0.25, 1.25, 0], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;down&quot;: {&quot;uv&quot;: [1.75, 0, 1.5, 0.25], &quot;texture&quot;: &quot;#0&quot;}
+			}
+		},
+		{
+			&quot;from&quot;: [0, 1, 15],
+			&quot;to&quot;: [1, 15, 16],
+			&quot;faces&quot;: {
+				&quot;north&quot;: {&quot;uv&quot;: [0.25, 0.25, 0.5, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;east&quot;: {&quot;uv&quot;: [0, 0.25, 0.25, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;south&quot;: {&quot;uv&quot;: [0.75, 0.25, 1, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;west&quot;: {&quot;uv&quot;: [0.5, 0.25, 0.75, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;up&quot;: {&quot;uv&quot;: [0.5, 0.25, 0.25, 0], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;down&quot;: {&quot;uv&quot;: [0.75, 0, 0.5, 0.25], &quot;texture&quot;: &quot;#0&quot;}
+			}
+		},
+		{
+			&quot;from&quot;: [15, 1, 15],
+			&quot;to&quot;: [16, 15, 16],
+			&quot;faces&quot;: {
+				&quot;north&quot;: {&quot;uv&quot;: [3.25, 0.25, 3.5, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;east&quot;: {&quot;uv&quot;: [3, 0.25, 3.25, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;south&quot;: {&quot;uv&quot;: [3.75, 0.25, 4, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;west&quot;: {&quot;uv&quot;: [3.5, 0.25, 3.75, 3.75], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;up&quot;: {&quot;uv&quot;: [3.5, 0.25, 3.25, 0], &quot;texture&quot;: &quot;#0&quot;},
+				&quot;down&quot;: {&quot;uv&quot;: [3.75, 0, 3.5, 0.25], &quot;texture&quot;: &quot;#0&quot;}
+			}
+		}
+	]
+}
+</code></pre>
+<p>The texture file <code>obsidian_frame.png</code>:</p>
+<img src="not-solid-block-and-custom-model.assets/obsidian_frame.png" alt="obsidian_frame" style="zoom:300%;" />
+<p>Here my models and materials are made with BlockBench.</p>
+<p>Item model <code>obsidian_frame.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;parent&quot;: &quot;boson:block/obsidian_frame&quot;
+}
+</code></pre>
+<p>Open the game, you should be able to see our obsidian frame.</p>
+<p><img src="not-solid-block-and-custom-model.assets/image-20200428214022814.png" alt="image-20200428214022814" /></p>
+<p>And water logged block</p>
+<p><img src="not-solid-block-and-custom-model.assets/image-20201017113953896.png" alt="image-20201017113953896" /></p>
+<p><a href="https://github.com/FledgeXu/NeutrinoSourceCode/tree/master/src/main/java/com/tutorial/neutrino/nonesoildblock">Source Code</a></p>
 
                     </main>
 
