@@ -423,7 +423,7 @@ public class Neutrino {
 <p><img src="item/first-item.assets/image-20200928175346817.png" alt="image-20200928175346817" /></p>
 <p><img src="item/first-item.assets/image-20200928175414243.png" alt="image-20200928175414243" /></p>
 <p>The item is still ugly, but that's our first item.</p>
-<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/first_item">源码链接</a></p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/first_item">Source Code</a></p>
 <h1><a class="header" href="#model-and-texture" id="model-and-texture">Model and Texture</a></h1>
 <p>In the previous section we have successfully added the first item, which was of course ugly, but in this section we will add models and materials to it.</p>
 <p>First create a folder under <code>resources</code> in the following directory.</p>
@@ -484,10 +484,182 @@ public class Neutrino {
 <p>It's worth noting here that just because <code>ItemStack</code> is zero, it doesn't mean it's null, so you have to use the <code>isEmpty()</code> method under <code>ItemStack</code> to determine if it's null.</p>
 <p><code>ItemStack</code> contains <code>Item</code> is actually the same instance, the reason is very simple, if it is not the same instance, it will pointlessly produce many of the same instance, for optimization purposes, of course, is appropriate to share an instance, which also means that you can use<code>result.getItem() == Items</code> to detect which <code>Item</code> is stored in ItemStack.</p>
 <h1><a class="header" href="#item-group" id="item-group">Item Group</a></h1>
+<p>In this section, we'll look at how to create a creative tab of your own, very simply.</p>
+<p>First create a class, let it inherit <code>ItemGroup</code>, <code>ItemGroup</code> on behalf of the creative bar, because we need to create a creative bar, naturally need to inherit it.</p>
+<p>It reads as follows:</p>
+<pre><code class="language-java">public class ObsidianGroup extends ItemGroup {
+    public ObsidianGroup() {
+        super(&quot;obsidian_group&quot;);
+    }
+
+    @Override
+    public ItemStack createIcon() {
+        return new ItemStack(ItemRegistry.obsidianIngot.get());
+    }
+}
+</code></pre>
+<p>The first method is used to set the title name of the creative bar, and the second provides the icon for the creative bar. Here we have used Obsidian Ingot as the icon, please note that the return value type of this function is <code>ItemStack</code>, not <code>Item</code>.</p>
+<p>Then we need to instantiate the class and create <code>ModGroup</code>.</p>
+<pre><code class="language-java">public class ModGroup {
+    public static final ItemGroup itemGroup = new ObsidianGroup();
+}
+</code></pre>
+<p>This is where we store instances of <code>ItemGroup</code> and its subclasses (such as <code>ObsidianGroup</code>, which we created earlier). Each instance here represents a creative bar in the game.</p>
+<p>It's also very easy to call the creative tab after you've created it, let's take Obsidian Ingot for example.</p>
+<pre><code class="language-java">public class ObsidianIngot extends Item {
+    public ObsidianIngot() {
+        super(new Properties().group(ModGroup.itemGroup));
+    }
+}
+</code></pre>
+<p>At this point open the game our Obsidian Ingot should be in the designated creative tab .</p>
+<p><img src="item/item-group.assets/image-20200427211358242.png" alt="image-20200427211358242" /></p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/group">Soruce Code</a></p>
 <h1><a class="header" href="#food" id="food">Food</a></h1>
+<p>In this section we will add a new food to the Minecraft world: the Obsidian Apple, after eating this apple you can reply to hunger, but it will be poisoned. Contrary to what many people think, food is not a separate thing, it's just a special item for Minecraft.</p>
+<p>Again, let's create a class that inherits <code>Item</code>.</p>
+<pre><code class="language-java">public class ObsidianApple extends Item {
+    private static final Food food = (new Food.Builder())
+            .saturation(10)
+            .hunger(20)
+            .effect(() -&gt; new EffectInstance(Effects.POISON, 3 * 20, 1), 1)
+            .build();
+
+    public ObsidianApple() {
+        super(new Properties().food(food).group(ItemGroup.FOOD));
+    }
+}
+</code></pre>
+<p>We explain one line by one line.</p>
+<p>We created a variable of type <code>Food</code>, which specifies some properties of this food, such as: <code>saturation</code> method sets the satiety level, <code>hunger</code> sets the hunger level to be restored, and <code>effect</code> method sets the potion effect that the food may have when eaten .Here we set the effect to <code>Poisoning</code>, with a duration of 60 ticks and potion level 1. The second parameter represents the likelihood of the effect triggering (think of the original raw chicken), here we set it to <code>1</code> for 100%.</p>
+<p>Next up is the construction method, which I'm sure you're already familiar with.The only thing new is the <code>.food(food)</code> method, which indicates that the item is a food, and we ended up putting the item in the <code>food</code> creative tab.</p>
+<p>Then we register our food under the name <code>obsidian_apple</code>:</p>
+<pre><code class="language-java">public class ItemRegistry {
+    public static final DeferredRegister&lt;Item&gt; ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Utils.MOD_ID);
+    public static final RegistryObject&lt;Item&gt; obsidianApple = ITEMS.register(&quot;obsidian_apple&quot;, ObsidianApple::new);
+}
+</code></pre>
+<p>Then add the model <code>obsdian_ingot.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;parent&quot;: &quot;item/generated&quot;,
+  &quot;textures&quot;: {
+    &quot;layer0&quot;: &quot;boson:item/obsidian_apple&quot;
+  }
+}
+</code></pre>
+<p>Then the textures <code>obsidian_apple.png</code>.</p>
+<img src="item/food.assets/obsidian_apple.png" alt="obsidian_apple" style="zoom:300%;" />
+<p>Take out your apples and try to eat them.</p>
+<p><img src="item/food.assets/image-20200427165949417.png" alt="image-20200427165949417" /></p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/food">Source Code</a></p>
 <h1><a class="header" href="#sword" id="sword">Sword</a></h1>
 <h1><a class="header" href="#tool" id="tool">Tool</a></h1>
 <h1><a class="header" href="#armor" id="armor">Armor</a></h1>
+<p>In this section, we'll come to learn how to add a set of Armor, and here we'll use Obsidian Armor as an example.</p>
+<p>As with tools and weapons, equipment has its own class, <code>IArmorMaterial</code>, and here we'll follow the original version and implement this interface with an Enum.</p>
+<pre><code class="language-java">public enum ModArmorMaterial implements IArmorMaterial {
+    OBSIDIAN(&quot;obsidian&quot;, 40, new int[]{5, 8, 10, 5}, 20, SoundEvents.ITEM_ARMOR_EQUIP_DIAMOND, 2.0F, 0.0F, () -&gt; {
+        return Ingredient.fromItems(ItemRegistry.obsidianIngot.get());
+    });
+
+    private static final int[] MAX_DAMAGE_ARRAY = new int[]{13, 15, 16, 11};
+    private final String name;
+    private final int maxDamageFactor;
+    private final int[] damageReductionAmountArray;
+    private final int enchantability;
+    private final SoundEvent soundEvent;
+    private final float toughness;
+    private final float knockbackResistance;
+    private final LazyValue&lt;Ingredient&gt; repairMaterial;
+
+    ModArmorMaterial(String name, int maxDamageFactor, int[] damageReductionAmountArray, int enchantability, SoundEvent soundEvent, float toughness, float knockbackResistance, Supplier&lt;Ingredient&gt; repairMaterial) {
+        this.name = name;
+        this.maxDamageFactor = maxDamageFactor;
+        this.damageReductionAmountArray = damageReductionAmountArray;
+        this.enchantability = enchantability;
+        this.soundEvent = soundEvent;
+        this.toughness = toughness;
+        this.knockbackResistance = knockbackResistance;
+        this.repairMaterial = new LazyValue&lt;&gt;(repairMaterial);
+    }
+
+    public int getDurability(EquipmentSlotType slotIn) {
+        return MAX_DAMAGE_ARRAY[slotIn.getIndex()] * this.maxDamageFactor;
+    }
+
+    public int getDamageReductionAmount(EquipmentSlotType slotIn) {
+        return this.damageReductionAmountArray[slotIn.getIndex()];
+    }
+
+    public int getEnchantability() {
+        return this.enchantability;
+    }
+
+    public SoundEvent getSoundEvent() {
+        return this.soundEvent;
+    }
+
+    public Ingredient getRepairMaterial() {
+        return this.repairMaterial.getValue();
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public String getName() {
+        return this.name;
+    }
+
+    public float getToughness() {
+        return this.toughness;
+    }
+
+    public float getKnockbackResistance() {
+        return this.knockbackResistance;
+    }
+}
+</code></pre>
+<p>Note the <code>name</code> here, which relates to the textures we'll be creating the player to wear on his body.</p>
+<pre><code class="language-java">public static final RegistryObject&lt;Item&gt; obsidianHelmet = ITEMS.register(&quot;obsidian_helmet&quot;, () -&gt; new ArmorItem(ModArmorMaterial.OBSIDIAN, EquipmentSlotType.HEAD, (new Item.Properties()).group(ModGroup.itemGroup)));
+public static final RegistryObject&lt;Item&gt; obsidianChestplate = ITEMS.register(&quot;obsidian_chestplate&quot;, () -&gt; new ArmorItem(ModArmorMaterial.OBSIDIAN, EquipmentSlotType.CHEST, (new Item.Properties()).group(ModGroup.itemGroup)));
+public static final RegistryObject&lt;Item&gt; obsidianLeggings = ITEMS.register(&quot;obsidian_leggings&quot;, () -&gt; new ArmorItem(ModArmorMaterial.OBSIDIAN, EquipmentSlotType.LEGS, (new Item.Properties()).group(ModGroup.itemGroup)));
+public static final RegistryObject&lt;Item&gt; obsidianBoots = ITEMS.register(&quot;obsidian_boots&quot;, () -&gt; new ArmorItem(ModArmorMaterial.OBSIDIAN, EquipmentSlotType.FEET, (new Item.Properties()).group(ModGroup.itemGroup)));
+</code></pre>
+<p>You can see that the first parameter of <code>ArmorItem</code> specifies the class corresponding to the armor, and the second parameter specifies the position where the armor is worn.</p>
+<p>The next step is the addition of materials and textures for the items, which I won't explain here.</p>
+<p>But armor has an extra wearable textures compared to other items, which needs to be added, because Minecraft hard codes all wearable armor textures under the <code>minecraft</code> domain, so we have to create the corresponding directory, which will look like this when it's finished.</p>
+<pre><code>resources
+├── META-INF
+│   └── mods.toml
+├── assets
+│   ├── boson
+│   └── minecraft
+│       └── textures
+│           └── models
+│               └── armor
+└── pack.mcmeta
+</code></pre>
+<p>As you can see, we've created <code>minecraft</code> and a corresponding folder for armor materials in the same folder as <code>boson</code>.</p>
+<p>接下来我们得放入我们盔甲的材质。材质有两张，命名格式为：<code>盔甲材料_layer_1</code>和<code>盔甲材料_layer_2</code>。在我们这里就是<code>obsidian_layer_1</code>和<code>obsidian_layer_2</code>。</p>
+<p>Next we have to put in our armor material. There are two materials, named in the format <code>armro-texture_layer_1</code> and <code>armro-texture_layer_2</code>. In our case it's <code>obsidian_layer_1</code> and <code>obsidian_layer_2</code>.</p>
+<img src="item/./armor.assets/obsidian_layer_1.png" alt="obsidian_layer_1" style="zoom:300%;" />
+<img src="item/./armor.assets/obsidian_layer_2.png" alt="obsidian_layer_1" style="zoom:300%;" />
+<p>Note that the two textures contain a set of armor.</p>
+<p>The directory after the textures is put in is as follows.</p>
+<pre><code>resources
+├── META-INF
+│   └── mods.toml
+├── assets
+│   ├── boson
+│   └── minecraft
+│       └── textures
+│           └── models
+│               └── armor
+│                   ├── obsidian_layer_1.png
+│                   └── obsidian_layer_2.png
+└── pack.mcmeta
+</code></pre>
+<p>Open the game and you should see a brand new suit of armor.</p>
+<p><img src="item/armor.assets/image-20200928192041780.png" alt="image-20200928192041780" /></p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/armor">Source Code</a></p>
 <h1><a class="header" href="#localization" id="localization">Localization</a></h1>
 <h1><a class="header" href="#block" id="block">Block</a></h1>
 <h1><a class="header" href="#first-block" id="first-block">First Block</a></h1>

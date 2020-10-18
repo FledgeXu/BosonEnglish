@@ -160,6 +160,42 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#food" id="food">Food</a></h1>
+<p>In this section we will add a new food to the Minecraft world: the Obsidian Apple, after eating this apple you can reply to hunger, but it will be poisoned. Contrary to what many people think, food is not a separate thing, it's just a special item for Minecraft.</p>
+<p>Again, let's create a class that inherits <code>Item</code>.</p>
+<pre><code class="language-java">public class ObsidianApple extends Item {
+    private static final Food food = (new Food.Builder())
+            .saturation(10)
+            .hunger(20)
+            .effect(() -&gt; new EffectInstance(Effects.POISON, 3 * 20, 1), 1)
+            .build();
+
+    public ObsidianApple() {
+        super(new Properties().food(food).group(ItemGroup.FOOD));
+    }
+}
+</code></pre>
+<p>We explain one line by one line.</p>
+<p>We created a variable of type <code>Food</code>, which specifies some properties of this food, such as: <code>saturation</code> method sets the satiety level, <code>hunger</code> sets the hunger level to be restored, and <code>effect</code> method sets the potion effect that the food may have when eaten .Here we set the effect to <code>Poisoning</code>, with a duration of 60 ticks and potion level 1. The second parameter represents the likelihood of the effect triggering (think of the original raw chicken), here we set it to <code>1</code> for 100%.</p>
+<p>Next up is the construction method, which I'm sure you're already familiar with.The only thing new is the <code>.food(food)</code> method, which indicates that the item is a food, and we ended up putting the item in the <code>food</code> creative tab.</p>
+<p>Then we register our food under the name <code>obsidian_apple</code>:</p>
+<pre><code class="language-java">public class ItemRegistry {
+    public static final DeferredRegister&lt;Item&gt; ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, Utils.MOD_ID);
+    public static final RegistryObject&lt;Item&gt; obsidianApple = ITEMS.register(&quot;obsidian_apple&quot;, ObsidianApple::new);
+}
+</code></pre>
+<p>Then add the model <code>obsdian_ingot.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;parent&quot;: &quot;item/generated&quot;,
+  &quot;textures&quot;: {
+    &quot;layer0&quot;: &quot;boson:item/obsidian_apple&quot;
+  }
+}
+</code></pre>
+<p>Then the textures <code>obsidian_apple.png</code>.</p>
+<img src="food.assets/obsidian_apple.png" alt="obsidian_apple" style="zoom:300%;" />
+<p>Take out your apples and try to eat them.</p>
+<p><img src="food.assets/image-20200427165949417.png" alt="image-20200427165949417" /></p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/food">Source Code</a></p>
 
                     </main>
 

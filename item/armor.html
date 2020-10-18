@@ -160,6 +160,111 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#armor" id="armor">Armor</a></h1>
+<p>In this section, we'll come to learn how to add a set of Armor, and here we'll use Obsidian Armor as an example.</p>
+<p>As with tools and weapons, equipment has its own class, <code>IArmorMaterial</code>, and here we'll follow the original version and implement this interface with an Enum.</p>
+<pre><code class="language-java">public enum ModArmorMaterial implements IArmorMaterial {
+    OBSIDIAN(&quot;obsidian&quot;, 40, new int[]{5, 8, 10, 5}, 20, SoundEvents.ITEM_ARMOR_EQUIP_DIAMOND, 2.0F, 0.0F, () -&gt; {
+        return Ingredient.fromItems(ItemRegistry.obsidianIngot.get());
+    });
+
+    private static final int[] MAX_DAMAGE_ARRAY = new int[]{13, 15, 16, 11};
+    private final String name;
+    private final int maxDamageFactor;
+    private final int[] damageReductionAmountArray;
+    private final int enchantability;
+    private final SoundEvent soundEvent;
+    private final float toughness;
+    private final float knockbackResistance;
+    private final LazyValue&lt;Ingredient&gt; repairMaterial;
+
+    ModArmorMaterial(String name, int maxDamageFactor, int[] damageReductionAmountArray, int enchantability, SoundEvent soundEvent, float toughness, float knockbackResistance, Supplier&lt;Ingredient&gt; repairMaterial) {
+        this.name = name;
+        this.maxDamageFactor = maxDamageFactor;
+        this.damageReductionAmountArray = damageReductionAmountArray;
+        this.enchantability = enchantability;
+        this.soundEvent = soundEvent;
+        this.toughness = toughness;
+        this.knockbackResistance = knockbackResistance;
+        this.repairMaterial = new LazyValue&lt;&gt;(repairMaterial);
+    }
+
+    public int getDurability(EquipmentSlotType slotIn) {
+        return MAX_DAMAGE_ARRAY[slotIn.getIndex()] * this.maxDamageFactor;
+    }
+
+    public int getDamageReductionAmount(EquipmentSlotType slotIn) {
+        return this.damageReductionAmountArray[slotIn.getIndex()];
+    }
+
+    public int getEnchantability() {
+        return this.enchantability;
+    }
+
+    public SoundEvent getSoundEvent() {
+        return this.soundEvent;
+    }
+
+    public Ingredient getRepairMaterial() {
+        return this.repairMaterial.getValue();
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public String getName() {
+        return this.name;
+    }
+
+    public float getToughness() {
+        return this.toughness;
+    }
+
+    public float getKnockbackResistance() {
+        return this.knockbackResistance;
+    }
+}
+</code></pre>
+<p>Note the <code>name</code> here, which relates to the textures we'll be creating the player to wear on his body.</p>
+<pre><code class="language-java">public static final RegistryObject&lt;Item&gt; obsidianHelmet = ITEMS.register(&quot;obsidian_helmet&quot;, () -&gt; new ArmorItem(ModArmorMaterial.OBSIDIAN, EquipmentSlotType.HEAD, (new Item.Properties()).group(ModGroup.itemGroup)));
+public static final RegistryObject&lt;Item&gt; obsidianChestplate = ITEMS.register(&quot;obsidian_chestplate&quot;, () -&gt; new ArmorItem(ModArmorMaterial.OBSIDIAN, EquipmentSlotType.CHEST, (new Item.Properties()).group(ModGroup.itemGroup)));
+public static final RegistryObject&lt;Item&gt; obsidianLeggings = ITEMS.register(&quot;obsidian_leggings&quot;, () -&gt; new ArmorItem(ModArmorMaterial.OBSIDIAN, EquipmentSlotType.LEGS, (new Item.Properties()).group(ModGroup.itemGroup)));
+public static final RegistryObject&lt;Item&gt; obsidianBoots = ITEMS.register(&quot;obsidian_boots&quot;, () -&gt; new ArmorItem(ModArmorMaterial.OBSIDIAN, EquipmentSlotType.FEET, (new Item.Properties()).group(ModGroup.itemGroup)));
+</code></pre>
+<p>You can see that the first parameter of <code>ArmorItem</code> specifies the class corresponding to the armor, and the second parameter specifies the position where the armor is worn.</p>
+<p>The next step is the addition of materials and textures for the items, which I won't explain here.</p>
+<p>But armor has an extra wearable textures compared to other items, which needs to be added, because Minecraft hard codes all wearable armor textures under the <code>minecraft</code> domain, so we have to create the corresponding directory, which will look like this when it's finished.</p>
+<pre><code>resources
+├── META-INF
+│   └── mods.toml
+├── assets
+│   ├── boson
+│   └── minecraft
+│       └── textures
+│           └── models
+│               └── armor
+└── pack.mcmeta
+</code></pre>
+<p>As you can see, we've created <code>minecraft</code> and a corresponding folder for armor materials in the same folder as <code>boson</code>.</p>
+<p>接下来我们得放入我们盔甲的材质。材质有两张，命名格式为：<code>盔甲材料_layer_1</code>和<code>盔甲材料_layer_2</code>。在我们这里就是<code>obsidian_layer_1</code>和<code>obsidian_layer_2</code>。</p>
+<p>Next we have to put in our armor material. There are two materials, named in the format <code>armro-texture_layer_1</code> and <code>armro-texture_layer_2</code>. In our case it's <code>obsidian_layer_1</code> and <code>obsidian_layer_2</code>.</p>
+<img src="./armor.assets/obsidian_layer_1.png" alt="obsidian_layer_1" style="zoom:300%;" />
+<img src="./armor.assets/obsidian_layer_2.png" alt="obsidian_layer_1" style="zoom:300%;" />
+<p>Note that the two textures contain a set of armor.</p>
+<p>The directory after the textures is put in is as follows.</p>
+<pre><code>resources
+├── META-INF
+│   └── mods.toml
+├── assets
+│   ├── boson
+│   └── minecraft
+│       └── textures
+│           └── models
+│               └── armor
+│                   ├── obsidian_layer_1.png
+│                   └── obsidian_layer_2.png
+└── pack.mcmeta
+</code></pre>
+<p>Open the game and you should see a brand new suit of armor.</p>
+<p><img src="armor.assets/image-20200928192041780.png" alt="image-20200928192041780" /></p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/armor">Source Code</a></p>
 
                     </main>
 
