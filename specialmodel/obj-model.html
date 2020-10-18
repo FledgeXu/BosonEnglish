@@ -159,7 +159,62 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#obj-model" id="obj-model">Obj Model</a></h1>
+                        <h1><a class="header" href="#obj-model" id="obj-model">OBJ Model</a></h1>
+<p>In this section we will learn how to add an OBJ item model to the block</p>
+<p>First create our block <code>ObsidianOBJ.java</code>:</p>
+<pre><code class="language-java">public class ObsidianOBJ extends Block {
+    public ObsidianOBJ() {
+        super(Properties.create(Material.ROCK).hardnessAndResistance(5).notSolid());
+    }
+}
+</code></pre>
+<p>It is consistent with the method created before, because the model we created is not solid, so the <code>notSolid</code> method is added.</p>
+<p>Registry Block:</p>
+<pre><code class="language-java">public static final RegistryObject&lt;Block&gt; obsidanObj = BLOCKS.register(&quot;obsidian_obj&quot;, ObsidianOBJ::new);
+</code></pre>
+<p>Registry Item：</p>
+<pre><code class="language-java">public static final RegistryObject&lt;Item&gt; obsidianObj = ITEMS.register(&quot;obsidian_obj&quot;, () -&gt; new BlockItem(BlockRegistry.obsidanObj.get(), new Item.Properties().group(ModGroup.itemGroup)));
+</code></pre>
+<p>BlockState file <code>obsidian_obj.json</code></p>
+<pre><code class="language-json">{
+  &quot;variants&quot;: {
+    &quot;&quot;: { &quot;model&quot;: &quot;boson:block/obsidian_obj&quot; }
+  }
+}
+</code></pre>
+<p>Model's json file <code>obsidian_obj.json</code></p>
+<pre><code class="language-json">{
+  &quot;loader&quot;: &quot;forge:obj&quot;,
+  &quot;model&quot;: &quot;boson:models/block/obsidian_obj.obj&quot;,
+  &quot;flip-v&quot;: true
+}
+</code></pre>
+<p>As you can see, it is a bit special from here. First, we use <code>loader</code> to specify that the model we want to load is in <code>obj</code> format, then specify our OBJ model in <code>model</code>, and finally <code>flip -v</code> is set to <code>true</code>. The reason for this is that the textures in minecraft and your material in blender and other tools are upside down, so you have to manually flip your textures.</p>
+<p>Next is the OBJ model <code>obsidian_obj.obj</code>, here only the places that need to be modified are marked:</p>
+<pre><code>mtllib obsidian_obj.mtl
+</code></pre>
+<p>You must specify the name of the mtl file you want to use here.</p>
+<p>Next is the mtl file <code>obsidian_obj.mtl</code>. Similarly, I only mark the places that need to be modified here.</p>
+<pre><code>map_Kd boson:block/obsidian_obj
+</code></pre>
+<p>You must specify the material of your model file in this way.</p>
+<p>Finally, our material <code>obsidian_obj.png</code>:</p>
+<img src="obj-model.assets/obsidian_obj.png" style="zoom:300%;" />
+<p><img src="obj-model.assets/image-20200429095433074.png" alt="image-20200429095433074" /></p>
+<p>You can see that our OBJ model has been successfully loaded. Of course, we haven't set up the correct collision box here, and this is left to the reader to implement.</p>
+<p>Items can also use the OBJ model, please explore by yourself.</p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/obj">Source Code</a></p>
+<hr />
+<h2><a class="header" href="#common-problem-and-solutions" id="common-problem-and-solutions">Common Problem and Solutions</a></h2>
+<h3><a class="header" href="#ambient-light" id="ambient-light">Ambient light</a></h3>
+<p>By default, you may find that your model has unnatural black shadows like the picture below. This is caused by ambient light occlusion. You can modify the block by overwriting the <code>getAmbientOcclusionLightValue</code> method under the <code>Block</code> class Ambient light occlusion, the default is <code>0.2</code>, and the maximum value is <code>1</code>. The larger the value, the smaller the ambient light occlusion.</p>
+<p><img src="obj-model.assets/image-20200724230101066.png" alt="image-20200724230101066" /></p>
+<h2><a class="header" href="#unnatural-highlights-at-night" id="unnatural-highlights-at-night">Unnatural highlights at night</a></h2>
+<p>Sometimes you will find that your model will emit unnatural highlights like this at night. This is caused by the extra attributes in the <code>mtl</code> file. For Mod development, it is recommended to keep only the <code>map_Kd</code> attribute. For details, please see IE <a href="https://github.com/BluSunrize/ImmersiveEngineering/blob/1.14/src/main/resources/assets/immersiveengineering/models/block/balloon.mtl">mtl file</a>.</p>
+<p><img src="obj-model.assets/image-20200724230406389.png" alt="image-20200724230406389" /></p>
+<hr />
+<h2><a class="header" href="#modding-crash-course" id="modding-crash-course">Modding Crash Course</a></h2>
+<p>If you are using Blender to make an OBJ model, please set the center point of your model to <code>X:0.5m,Y-0.5m,Z:0.5</code>, so you don't need to perform additional offset calculations in the json file . A full cube in Minecraft is exactly <code>1m*1m*1m</code> in Blender.</p>
 
                     </main>
 
