@@ -1,6 +1,6 @@
 # Setup Environment
 
-## 需要的工具
+## Required Tools
 
 -  [AdoptOpenJDK8-HotSpot](https://adoptopenjdk.net/?variant=openjdk8&jvmVariant=hotspot) For compatibility reasons, **make sure you have JDK8 HotSpot** installed.
 -  [IntelliJ IDEA 2020 Community Edition](https://www.jetbrains.com/idea/download/), please install it yourself after the download is complete.
