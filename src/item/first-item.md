@@ -67,4 +67,4 @@ At this point, the code needed to add the items we want to add has been written,
 
 The item is still ugly, but that's our first item.
 
-[源码链接](https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/first_item)
+[Source Code](https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/first_item)
