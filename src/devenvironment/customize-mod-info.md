@@ -16,6 +16,28 @@ Then click the re-import button in the right Gradle panel to re-import the proje
 
 This process may involve downloading files (but not a lot), there is a chance of errors, check your `build.gradle` for errors, and try a few times.
 
+## gradle.build
+
+You also need to change these lines in build.gradle
+
+```groovy
+version = '1.0'
+group = 'com.yourname.modid' 
+archivesBaseName = 'modid'
+```
+
+To:
+
+```groovy
+version = '1.0'
+group = 'com.github.fledgexu.boson' 
+archivesBaseName = 'Boson'
+```
+
+The first line shoul be your mode’s version. The second should be your mods group name, if you don’t know how to naming it, please read [this](http://maven.apache.org/guides/mini/guide-naming-conventions.html).
+
+The last, archivesBaseName, should the Jar name of Your mod. In there, i put the “Boson”.
+
 ## Configuration
 
 First we select all the directories and files in the `java` folder and then right-click to delete the default classes under the Java package.
@@ -78,7 +100,7 @@ The rest are all dependencies, and Forge's official examples are clearly written
 The `mods.toml` I finished modifying is as follows:
 
 ```toml
-modLoader="javafml" 
+modLoader="javafml"  
 loaderVersion="[34,)" 
 license="GNU GPLv3"
 [[mods]]
