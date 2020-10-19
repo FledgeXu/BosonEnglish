@@ -221,24 +221,42 @@
 <p>In this section, I'll go over how Minecraft works in general, and a very important concept: the &quot;sides&quot;.</p>
 <p>Minecraft generally belongs to &quot;C/S (Client/Server) Architecture&quot;. So what is &quot;server&quot; and what is &quot;client&quot;?</p>
 <p>The name actually gives a general idea of what it means, the &quot;server&quot; is used to provide the service, and the &quot;client&quot; is used directly by the user. So how are these two sides represented in Minecraft?</p>
-<p>In Minecraft the division of duties between the two sides is as follows.</p>
+<p>Actually, there are four sides in Minecraft.</p>
+<blockquote>
+<p>When we say “client” or “server”, it usually follows with a fairly intuitive understanding of what part of the game we’re talking about. After all, a client is what the user interacts with, and a server is where the user connects for a multiplayer game. Easy, right?</p>
+<p>As it turns out, there can be some ambiguity even with two such terms. Here we disambiguate the four possible meanings of “client” and “server”:</p>
 <ul>
-<li>
-<p>server side</p>
-<p>Responsible for the game's logic, reading and writing of data.</p>
-</li>
-<li>
-<p>client side</p>
-<p>It accepts input and output from the user and renders the game screen based on the data from the server.</p>
-</li>
+<li>Physical client - The <em>physical client</em> is the entire program that runs whenever you launch Minecraft from the launcher. All threads, processes, and services that run during the game’s graphical, interactable lifetime are part of the physical client.</li>
+<li>Physical server - Often known as the dedicated server, the <em>physical server</em> is the entire program that runs whenever you launch any sort of <code>minecraft_server.jar</code> that does not bring up a playable GUI.</li>
+<li>Logical server - The <em>logical server</em> is what runs game logic: mob spawning, weather, updating inventories, health, AI, and all other game mechanics. The logical server is present within the physical server, but is also can run inside a physical client together with a logical client, as a single player world. The logical server always runs in a thread named the <code>Server Thread</code>.</li>
+<li>Logical client - The <em>logical client</em> is what accepts input from the player and relays it to the logical server. In addition, it also receives information from the logical server and makes it available graphically to the player. The logical client runs in the <code>Client Thread</code>, though often several other threads are spawned to handle things like audio and chunk render batching.</li>
 </ul>
+<p>In the Minecraft codebase, the physical side is represented by an enum called <code>Dist</code>, while the logical side is represented by an enum called <code>LogicalSide</code>.</p>
+<p>— <a href="https://mcforge.readthedocs.io/en/1.14.x/concepts/sides/">Forge Doc</a></p>
+</blockquote>
 <p>It's worth noting that the distinction between client and server here is only logical. In fact if you are in single player mode, there will be both a server and a client on your computer, and they are in different threads<sup class="footnote-reference"><a href="#1">1</a></sup>. But when you connect to a server, only the client exists on your computer and the server is moved to a remote server.</p>
 <p>The following diagram roughly explains how Minecraft works.</p>
 <p><img src="introducation/how-minecraft-works.assets/How_minecraft_work.svg" alt="How_minecraft_work" /></p>
 <p>When you see this picture, you may wonder why the client has a data model when the server is responsible for the game logic. In fact, the &quot;client-side data model&quot; here is just a copy of the &quot;server-side data model&quot;, although they have separate game ticks and share a lot of the same code, but the final logic is still the server-side prevails.</p>
 <p>As we mentioned before, the client and server are independent, but they inevitably need to synchronize data, and in Minecraft, all client and server data synchronization is done through network packets. In most of the cases, the original version has already implemented a method to synchronize the data, we just need to call the method that has already been implemented, but in some cases, the original version does not implement the corresponding function, or it is not suitable to use the function provided by the original version, we have to create and send network packets to complete the data synchronization.</p>
 <p>So the next question is, how do we distinguish in our code whether we are on the client side or the server side?</p>
-<p>Minecraft's <code>World</code> has an <code>isRemote</code> field, which is <code>true</code> when on the client and <code>false</code> when on the server.</p>
+<blockquote>
+<h3><a class="header" href="#worldisremote" id="worldisremote"><code>world.isRemote</code></a></h3>
+<p>This boolean check will be your most used way to check sides. Querying this field on a <code>World</code> object establishes the <strong>logical</strong> side the world belongs to. That is, if this field is <code>true</code>, the world is currently running on the logical client. If the field is <code>false</code>, the world is running on the logical server. It follows that the physical server will always contain <code>false</code> in this field, but we cannot assume that <code>false</code> implies a physical server, since this field can also be <code>false</code> for the logical server inside a physical client (in other words, a single player world).</p>
+<p>Use this check whenever you need to determine if game logic and other mechanics should be run. For example, if you want to damage the player every time they click your block, or have your machine process dirt into diamonds, you should only do so after ensuring <code>world.isRemote</code> is <code>false</code>. Applying game logic to the logical client can cause desynchronization (ghost entities, desynchronized stats, etc.) in the lightest case, and crashes in the worst case.</p>
+<p>This check should be used as your go-to default. Aside from <code>DistExecutor</code>, rarely will you need the other ways of determining side and adjusting behavior.</p>
+<h3><a class="header" href="#distexecutor" id="distexecutor"><code>DistExecutor</code></a></h3>
+<p>Considering the use of a single “universal” jar for client and server mods, and the separation of the physical sides into two jars, an important question comes to mind: How do we use code that is only present on one physical side? All code in <code>net.minecraft.client</code> is only present on the physical client, and all code in <code>net.minecraft.server.dedicated</code> is only present on the physical server. If any class you write references those names in any way, they will crash the game when that respective class is loaded in an environment where those names do not exist. A very common mistake in beginners is to call <code>Minecraft.getMinecraft().&lt;doStuff&gt;()</code> in block or tile entity classes, which will crash any physical server as soon as the class is loaded.</p>
+<p>How do we resolve this? Luckily, FML has <code>DistExecutor</code>, which provides various methods to run different methods on different physical sides, or a single method only on one side.</p>
+<p>Note</p>
+<p>It is important to understand that FML checks based on the <strong>physical</strong> side. A single player world (logical server + logical client within a physical client) will always use <code>Dist.CLIENT</code>!</p>
+<h3><a class="header" href="#thread-groups" id="thread-groups">Thread Groups</a></h3>
+<p>If <code>Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER</code> is true, it is likely the current thread is on the logical server. Otherwise, it is likely on the logical client. This is useful to retrieve the <strong>logical</strong> side when you do not have access to a <code>World</code> object to check <code>isRemote</code>. It <em>guesses</em> which logical side you are on by looking at the group of the currently running thread. Because it is a guess, this method should only be used when other options have been exhausted. In nearly every case, you should prefer checking <code>world.isRemote</code> to this check.</p>
+<h3><a class="header" href="#fmlenvironmentdist-and-onlyin" id="fmlenvironmentdist-and-onlyin"><code>FMLEnvironment.dist</code> and <code>@OnlyIn</code></a></h3>
+<p><code>FMLEnvironment.dist</code> holds the <strong>physical</strong> side your code is running on. Since it is determined at startup, it does not rely on guessing to return its result. The number of use cases for this is limited, however.</p>
+<p>Annotating a method or field with the <code>@OnlyIn(Dist)</code> annotation indicates to the loader that the respective member should be completely stripped out of the definition not on the specified <strong>physical</strong> side. Usually, these are only seen when browsing through the decompiled Minecraft code, indicating methods that the Mojang obfuscator stripped out. There is little to no reason for using this annotation directly. Only use it if you are overriding a vanilla method that already has <code>@OnlyIn</code> defined. In most other cases where you need to dispatch behavior based on physical sides, use <code>DistExecutor</code> or a check on <code>FMLEnvironment.dist</code> instead.</p>
+<p>— <a href="https://mcforge.readthedocs.io/en/1.14.x/concepts/sides/#performing-side-specific-operations">Forge Dock</a></p>
+</blockquote>
 <hr />
 <div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
 <p>Thread is one of the units of program scheduling, being in different threads means that the logic and data of these two are independent of each other and can only be synchronized by specific methods. Specifically, the server is in the &quot;Server thread&quot; and the client is in the &quot;Render thread&quot;, if you've ever watched the output log when Minecraft starts, you should see these two words.</p>
@@ -331,6 +349,19 @@
 <p>Then click the re-import button in the right Gradle panel to re-import the project, because the <code>build.gradle</code> file is very important, please be careful not to correct it.</p>
 <p><img src="devenvironment/customize-mod-info.assets/image-20200928114634037.png" alt="image-20200928114634037" /></p>
 <p>This process may involve downloading files (but not a lot), there is a chance of errors, check your <code>build.gradle</code> for errors, and try a few times.</p>
+<h2><a class="header" href="#gradlebuild" id="gradlebuild">gradle.build</a></h2>
+<p>You also need to change these lines in build.gradle</p>
+<pre><code class="language-groovy">version = '1.0'
+group = 'com.yourname.modid' 
+archivesBaseName = 'modid'
+</code></pre>
+<p>To:</p>
+<pre><code class="language-groovy">version = '1.0'
+group = 'com.github.fledgexu.boson' 
+archivesBaseName = 'Boson'
+</code></pre>
+<p>The first line shoul be your mode’s version. The second should be your mods group name, if you don’t know how to naming it, please read <a href="http://maven.apache.org/guides/mini/guide-naming-conventions.html">this</a>.</p>
+<p>The last, archivesBaseName, should the Jar name of Your mod. In there, i put the “Boson”.</p>
 <h2><a class="header" href="#configuration" id="configuration">Configuration</a></h2>
 <p>First we select all the directories and files in the <code>java</code> folder and then right-click to delete the default classes under the Java package.</p>
 <p><img src="devenvironment/customize-mod-info.assets/image-20200928164532729.png" alt="image-20200928164532729" /></p>
@@ -366,7 +397,7 @@ public class Boson {
 <p>Becasue the most readers of this verison of Boson are English speaker. You can understand  comments. So just read the commnet to understand the function of configuration.</p>
 <p>The rest are all dependencies, and Forge's official examples are clearly written, so we won't elaborate here.</p>
 <p>The <code>mods.toml</code> I finished modifying is as follows:</p>
-<pre><code class="language-toml">modLoader=&quot;javafml&quot; 
+<pre><code class="language-toml">modLoader=&quot;javafml&quot;  
 loaderVersion=&quot;[34,)&quot; 
 license=&quot;GNU GPLv3&quot;
 [[mods]]
@@ -1405,8 +1436,375 @@ public class RenderTypeRegistry {
 <p>If you are using Blender to make an OBJ model, please set the center point of your model to <code>X:0.5m,Y-0.5m,Z:0.5</code>, so you don't need to perform additional offset calculations in the json file . A full cube in Minecraft is exactly <code>1m*1m*1m</code> in Blender.</p>
 <h1><a class="header" href="#tileentity" id="tileentity">TileEntity</a></h1>
 <h1><a class="header" href="#first-tileentity-and-data-storage" id="first-tileentity-and-data-storage">First TileEntity and Data Storage</a></h1>
+<p>In this section, we will learn how to create a block entity of our own. Let’s take a counter as an example. Its only function is to increase by one when you right-click the block, and then send the corresponding one to your chat box value.</p>
+<p>First, let's create our Block <code>ObsidianCounter.java</code>:</p>
+<pre><code class="language-java">public class ObsidianCounter extends Block {
+    public ObsidianCounter() {
+        super(Properties.create(Material.ROCK).hardnessAndResistance(5));
+    }
+
+    @Override
+    public boolean hasTileEntity(BlockState state) {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
+        return new ObsidianCounterTileEntity();
+    }
+
+    @Override
+    public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
+        if (!worldIn.isRemote &amp;&amp; handIn == Hand.MAIN_HAND) {
+            ObsidianCounterTileEntity obsidianCounterTileEntity = (ObsidianCounterTileEntity) worldIn.getTileEntity(pos);
+            int counter = obsidianCounterTileEntity.increase();
+            TranslationTextComponent translationTextComponent = new TranslationTextComponent(&quot;message.neutrino.counter&quot;, counter);
+            player.sendStatusMessage(translationTextComponent, false);
+        }
+        return ActionResultType.SUCCESS;
+    }
+}
+</code></pre>
+<p>We won't go into details about the registration part, here we will talk about a few functions. The first thing to talk about is the set of functions <code>hasTileEntity</code> and <code>createTileEntity</code> (**Please note that the two methods here are not <code>@Deprecated</code>, that is, they are not &quot;crossed&quot; after you rewrite What we need to rewrite is the method under the ʻIForgeBlock<code>interface, please be careful not to rewrite the wrong method**), this set of functions allows your block to be bound to a block entity, and the return value of</code>hasTileEntity<code>is set to</code>true <code>, it means that our block has a block entity. The function </code>createTileEntity<code>determines which block entity our block is. In our case, it is</code>ObsidianCounterTileEntity`.</p>
+<p>Let's skip the <code>onBlockActivated</code> method first to see what is in our block entity.</p>
+<p><code>ObsidianCounterTileEntity</code>:</p>
+<pre><code class="language-java">public class ObsidianCounterTileEntity extends TileEntity {
+    private int counter = 0;
+
+    public ObsidianCounterTileEntity() {
+        super(TileEntityTypeRegistry.obsidianCounterTileEntity.get());
+    }
+
+    public int increase() {
+        counter++;
+        markDirty();
+        return counter;
+    }
+}
+</code></pre>
+<p>As you can see, the content in this block entity is very simple, with only one construction method and one <code>increase</code> method. The <code>increase</code> method is related to the specific content we want to achieve. Here, let's first look at the construction method.</p>
+<pre><code class="language-java">super(TileEntityTypeRegistry.obsidianCounterTileEntity.get());
+</code></pre>
+<p>In the construction method here, we passed a <code>TilEnttityType</code> to our parent class, so what is this <code>TilEntityType</code>? This <code>TileEntityType</code> hence the name implies the &quot;type&quot; of the block entity. This &quot;type&quot; specifies how our block entity should be created and which blocks it is bound to. Next we will take a look at our <code>TilEntityType </code>How was it created and registered?</p>
+<p>Then we created a new class called <code>TileEntityTypeRegistry</code>:</p>
+<pre><code class="language-java">public class TileEntityTypeRegistry {
+    public static final DeferredRegister&lt;TileEntityType&lt;?&gt;&gt; TILE_ENTITIES = DeferredRegister.create(ForgeRegistries.TILE_ENTITIES, Utils.MOD_ID);
+    public static final RegistryObject&lt;TileEntityType&lt;ObsidianCounterTileEntity&gt;&gt; obsidianCounterTileEntity = TILE_ENTITIES.register(&quot;obsidian_counter_tileentity&quot;, () -&gt; TileEntityType.Builder.create(ObsidianCounterTileEntity::new, BlockRegistry.obsidianCounterBlock.get()).build(null));
+}
+</code></pre>
+<p>The first is the type, because <code>TileEntityType</code> is a generic class, and its generics can contain various <code>TileEntity</code>, so when we define <code>TILE_ENTITIES</code>, the type in <code>DeferredRegister</code> is <code>TileEntityType&lt;?&gt;</code>, the question mark here means that various <code>TileEntityType</code> such as <code>TileEntityType&lt;AEntity&gt;</code> and <code>TileEntityType&lt;BEntity&gt;</code> can be registered in <code>TILE_ENTITIES</code>.</p>
+<p>Then the type of our variable, because we are going to register <code>TileEntityType</code> for <code>ObsidianCounterTileEntity</code>, so the type we need is naturally <code>TileEntityType&lt;ObsidianCounterTileEntity&gt;</code>.</p>
+<p>The most complicated thing here should be the specific registration process, but it is not difficult to understand. The same as before, it is the registered name and a registered object. We can split this complicated sentence apart.</p>
+<pre><code class="language-java">TILE_ENTITY_TYPE_DEFERRED_REGISTER.register(&quot;obsidian_counter_tileentity&quot;,()-&gt; ...);
+</code></pre>
+<p>If we omit a series of complicated content inside, the core of this code is such a sentence, I believe everyone can understand this, the key point here is the &quot;...&quot; we omitted.</p>
+<p>The previously omitted content is as follows:</p>
+<pre><code class="language-java">TileEntityType.Builder.create(ObsidianCounterTileEntity::new, BlockRegistry.obsidianCounterBlock.get()).build(null));
+</code></pre>
+<p>As you can see, here we first call the <code>TileEntityType.Builder.create</code> method, which is a method provided by Minecraft to create a <code>TileEntityType</code>, and then call the <code>build</code> method. Let's first look at the parameters in the <code>build</code> method. In <code>build</code> we passed in a <code>null</code>. In fact, this place can be filled with an instance called <code>datafix</code>, which is used to archive different versions before Converted. Here we do not have this requirement (most mods are not expected to be realized), so we fill in a <code>null</code>.</p>
+<p>Then we look back at the two parameters in <code>TileEntityType.Builder.create</code>, the first parameter is a <code>supplier</code>, here we fill in the method reference of the construction method of the block entity, and the second type is and For the associated block, here we fill in the instance of our registered <code>ObsidianCounterBlock</code>. As for the registration of the block, I believe that the readers here have the ability to solve it by themselves.</p>
+<p>This way the content is a lot less at once, but for the convenience of readers' understanding, I still use the above writing method. Of course, don't forget to register <code>TILE_ENTITIES</code> in the Mod bus in your Mod main class.</p>
+<p>Then we can take a look at our logic</p>
+<pre><code class="language-java">@Override
+public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
+  if (!worldIn.isRemote &amp;&amp; handIn == Hand.MAIN_HAND) {
+    ObsidianCounterTileEntity obsidianCounterTileEntity = (ObsidianCounterTileEntity) worldIn.getTileEntity(pos);
+    int counter = obsidianCounterTileEntity.increase();
+    TranslationTextComponent translationTextComponent = new TranslationTextComponent(&quot;message.neutrino.counter&quot;, counter);
+    player.sendStatusMessage(translationTextComponent, false);
+  }
+  return ActionResultType.SUCCESS;
+}
+</code></pre>
+<p>The first is the block's <code>onBlockActivated</code> method. Please note that there are two <code>onBlockActivated</code> methods with the same name but different return values. Don't rewrite the method wrong.</p>
+<pre><code class="language-java">if (!worldIn.isRemote &amp;&amp; handIn == Hand.MAIN_HAND)
+</code></pre>
+<p>First of all, we judged whether our method is called on the server side. Remember that any logic that involves data processing should be executed on the server side. In addition, we also judged whether the incoming <code>handIn</code> is the &quot;master hand&quot;. This judgment is made because this method will be executed once for both hands.</p>
+<pre><code class="language-java">ObsidianCounterTileEntity obsidianCounterTileEntity = (ObsidianCounterTileEntity) worldIn.getTileEntity(pos);
+</code></pre>
+<p>Here we call the <code>worldIn.getTileEntity</code> method to get the <code>TileEntity</code> corresponding to our block. The reason must be called by this method is that even if a block is bound to a TileEntity, you cannot guarantee that this <code>TileEntity</code> It must exist.</p>
+<pre><code class="language-java">int counter = obsidianCounterTileEntity.increase();
+</code></pre>
+<p>Then we here increase and get the value by calling the <code>increase</code> method of our <code>obsidianCounterTileEntity</code>.</p>
+<pre><code class="language-java">public int increase() {
+  counter++;
+  return counter;
+}
+</code></pre>
+<p>The content of the <code>increase</code> method is very simple, I believe everyone can understand it.</p>
+<pre><code class="language-java">TranslationTextComponent translationTextComponent = new TranslationTextComponent(&quot;message.neutrino.counter&quot;, counter);
+</code></pre>
+<p>Then there is this sentence, first we create a <code>TranslationTextComponent</code>, here is the content we want to send to the player's chat box. As its name implies, this is a translated text, so it should be a &quot;key&quot; rather than a specific content, <code>&quot;message.tour14.counter&quot;</code> is the &quot;key&quot; value, we also passed in later The count value obtained, the reason for this, we first press the table.</p>
+<p>First, we add the following content to the language file (take English as an example).</p>
+<pre><code class="language-json"> &quot;message.neutrino.counter&quot;: &quot;count: %d&quot;
+</code></pre>
+<p>You can see that there is a <code>%d</code> here. At this time, the reason why we need to pass in our value is very clear. In fact, the value of our <code>counter</code> variable is formatted through <code>%d</code> .</p>
+<pre><code class="language-java">player.sendStatusMessage(translationTextComponent, false);
+</code></pre>
+<p>Finally, we call this statement and send a message to the player. Please note that because we have judged <code>!worldIn.isRemote</code> before, although this code is executed on the server side, because the specific message is displayed on the client side , So we need to send a message to the client by sending a package. Fortunately, Minecraft provides us with this method to send data, so we don’t need to implement it ourselves.</p>
+<p><img src="tileentity/first-tileentity-and-data-storage.assets/image-20200429165945640.png" alt="image-20200429165945640" /></p>
+<p>You can see that our block can be successfully counted.</p>
+<p>But there is a bug in this block. When you exit the current save and re-enter, you will find that our counter starts counting from 0 again. Next, let's fix this problem.</p>
+<p>The reason for this bug is that when the save is running, the value of the counter exists in the memory and can function normally, but when the game is closed, because the important data in the memory is not saved to your hard disk, so open it next time During the game, these data cannot be reloaded and restored. Before our TileEntity did not implement this save and restore function, we will add this function to it next.</p>
+<p>The content of the <code>ObsidianCounterTileEntity</code> after the addition is as follows:</p>
+<pre><code class="language-java">public class ObsidianCounterTileEntity extends TileEntity {
+    private int counter = 0;
+
+    public ObsidianCounterTileEntity() {
+        super(TileEntityTypeRegistry.obsidianCounterTileEntity.get());
+    }
+
+    public int increase() {
+        counter++;
+        markDirty();
+        return counter;
+    }
+
+    @Override
+    public void read(BlockState state, CompoundNBT nbt) {
+        counter = nbt.getInt(&quot;counter&quot;);
+        super.read(state, nbt);
+    }
+
+    @Override
+    public CompoundNBT write(CompoundNBT compound) {
+        compound.putInt(&quot;counter&quot;, counter);
+        return super.write(compound);
+    }
+}
+</code></pre>
+<p>As you can see, compared to the previous code, we have overwritten the <code>write</code> and <code>read</code> methods. These two methods are used to save and restore data. In Minecraft, all data should ultimately be saved in NBT format (unless you implement the save method yourself), and the NBT tag in the code is represented by <code>CompoundNBT</code>. NBT tags are also a &quot;key-value pair&quot; structure, and each value has a corresponding name. The method at the beginning of <code>put</code> is to write a value to the NBT tag, and the method at the beginning of <code>get</code> is to get the value. In addition to <code>CompoudNBT</code>, there is also the <code>ListNBT</code> class to represent the NBT tag of the array type.</p>
+<p>The <code>write</code> here is the method of data saving. Its incoming value is the NBT tag that has been saved by other classes before, and its return value is the NBT tag that will eventually be saved to the hard disk (there are other classes to write Enter), under normal circumstances, you should call <code>return super.write(compound);</code> to do the final return.</p>
+<p>The <code>read</code> method is just the opposite, here we call the <code>counter = compound.getInt(&quot;counter&quot;);</code> method to restore the data of our counter. Similarly, you should call <code>super.read(compound);</code> to do the final return.</p>
+<p>Another very important thing is</p>
+<pre><code class="language-java">public int increase() {
+  counter++;
+  markDirty();
+  return counter;
+}
+</code></pre>
+<p>We have added the <code>markDirty()</code> method here. This method means to mark our data as modified so that the game knows to save and call the save method when it is closed. This is because compared to the execution speed of the CPU, the saving and reading and writing speed of the hard disk is very slow, so if frequent saving and reading and writing operations will seriously slow down the speed of the game, a reasonable way is to mark that we need to save The data is then saved together at a unified point in time, the role of <code>markDirty()</code> is exactly this.</p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/first_tileentity">Source Code</a></p>
 <h1><a class="header" href="#itickabletileentity" id="itickabletileentity">ITickableTileEntity</a></h1>
-<h1><a class="header" href="#tileentitys-data-sync" id="tileentitys-data-sync">TileEntity's Data Sync</a></h1>
+<p>In this section, we will learn about one of the most important interfaces in TileEntity: <code>ITickableTileEntity</code>.</p>
+<p>In this section, we will take the creation of a box that automatically greets us as an example to reflect the function of this interface.</p>
+<p><code>ObsidianHelloBlock</code>:</p>
+<pre><code class="language-java">public class ObsidianHelloBlock extends Block {
+    public ObsidianHelloBlock() {
+        super(Properties.create(Material.ROCK).hardnessAndResistance(5));
+    }
+
+    @Override
+    public boolean hasTileEntity(BlockState state) {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
+        return new ObsidianHelloTileEntity();
+    }
+}
+</code></pre>
+<p><code>ObsidianHelloTileEntity</code>:</p>
+<pre><code class="language-java">public class ObsidianHelloTileEntity extends TileEntity implements ITickableTileEntity {
+    private static final int MAX_TIME = 5 * 20;
+    private int timer = 0;
+
+    public ObsidianHelloTileEntity() {
+        super(TileEntityTypeRegistry.obsidianHelloTileEntity.get());
+    }
+
+    @Override
+    public void tick() {
+        if (world != null &amp;&amp; !world.isRemote) {
+            if (timer == MAX_TIME) {
+                PlayerEntity player = world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), 10, false);
+                TranslationTextComponent translationTextComponent = new TranslationTextComponent(&quot;message.hello_block.hello&quot;);
+                if (player != null) {
+                    player.sendStatusMessage(translationTextComponent, false);
+                }
+                timer = 0;
+            }
+            timer++;
+        }
+    }
+}
+
+</code></pre>
+<p>In fact, the code of this block entity is much simpler than the code of the first block entity we made. You can see that we have implemented the <code>ITickableTileEntity</code> interface here. This interface has only one method that needs to be implemented, which is the <code>tick</code> method, so the name implies. This will be executed once in each game tick. We have made a counter here, and then The nearest player within 10 block around the block position is obtained through the <code>world.getClosestPlayer</code> method, and then a <code>TranslationTextComponent</code> message is created, and finally <code>player.sendStatusMessage</code> is called to send the message to the player, and the <code>sendStatusMessage</code> accepts <code>ITextComponent</code> interface.</p>
+<p>Don't forget the translation of language files:</p>
+<pre><code class="language-json">&quot;message.hello_block.hello&quot;: &quot;Hello&quot;
+</code></pre>
+<p>Register <code>TileEntityType</code>:</p>
+<pre><code class="language-java">public static RegistryObject&lt;TileEntityType&lt;ObsidianHelloTileEntity&gt;&gt; obsidianHelloTileEntity = TILE_ENTITIES.register(&quot;obsidian_hello_tileentity&quot;, () -&gt; TileEntityType.Builder.create(ObsidianHelloTileEntity::new, BlockRegistry.obsidianHelloBlock.get()).build(null));
+
+</code></pre>
+<p>The other registration and creation of model files are omitted here, and I believe that readers have the ability to complete them independently.</p>
+<p>Open the game and get close to the block</p>
+<p>You can see that our block is greeting us.</p>
+<p><img src="tileentity/itickabletileentity.assets/image-20200928202044020.png" alt="image-20200928202044020" /></p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/tickabletileentity">源代码</a></p>
+<h1><a class="header" href="#data-synchronization-built-into-the-block-entity" id="data-synchronization-built-into-the-block-entity">Data synchronization built into the block entity</a></h1>
+<p>In this section, we will learn about the data synchronization function built into the block entity.</p>
+<p>Remember the data synchronization between the server and the client we talked about before? Fortunately, TileEntity has built-in two sets of data synchronization methods for us. Unfortunately, these two sets of methods can only synchronize data from the server to the client, and can only synchronize a small amount of data.</p>
+<p>In this section, we will learn how to make a box that plays the roar of the zombie every few seconds. Let's start with the box;</p>
+<p><code>ObsidianZombieBlock</code></p>
+<pre><code class="language-java">public class ObsidianZombieBlock extends Block {
+    public ObsidianZombieBlock() {
+        super(Properties.create(Material.ROCK).hardnessAndResistance(5));
+    }
+
+    @Override
+    public boolean hasTileEntity(BlockState state) {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
+        return new ObsidianZombieTileEntity();
+    }
+}
+</code></pre>
+<p>Then there is <code>ObsidianZombieTileEntity</code>.</p>
+<pre><code class="language-java">public class ObsidianZombieTileEntity extends TileEntity implements ITickableTileEntity {
+    private boolean flag = false;
+    private int MAX_TIME = 5 * 20;
+    private int timer = 0;
+
+
+    public ObsidianZombieTileEntity() {
+        super(TileEntityTypeRegistry.obsidianZombieTileEntity.get());
+    }
+
+    @Override
+    public void tick() {
+        if (world.isRemote &amp;&amp; flag) {
+            PlayerEntity player = world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), 10, false);
+            this.world.playSound(player, pos, SoundEvents.ENTITY_ZOMBIE_AMBIENT, SoundCategory.AMBIENT, 1.0f, 1.0f);
+            flag = false;
+        }
+        if (!world.isRemote) {
+            if (timer == MAX_TIME) {
+                flag = true;
+                world.notifyBlockUpdate(pos, getBlockState(), getBlockState(), Constants.BlockFlags.BLOCK_UPDATE);
+                flag = true;
+                timer = 0;
+            }
+            timer++;
+        }
+    }
+
+    @Nullable
+    @Override
+    public SUpdateTileEntityPacket getUpdatePacket() {
+        return new SUpdateTileEntityPacket(pos, 1, getUpdateTag());
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
+        handleUpdateTag(world.getBlockState(pkt.getPos()), pkt.getNbtCompound());
+    }
+
+    @Override
+    public CompoundNBT getUpdateTag() {
+        CompoundNBT compoundNBT = super.getUpdateTag();
+        compoundNBT.putBoolean(&quot;flag&quot;, flag);
+        return compoundNBT;
+    }
+
+    @Override
+    public void handleUpdateTag(BlockState state, CompoundNBT tag) {
+        flag = tag.getBoolean(&quot;flag&quot;);
+    }
+}
+</code></pre>
+<p>First, let's explain the method used to synchronize the two sets of data.</p>
+<ul>
+<li><code>getUpdatePacket</code></li>
+<li><code>onDataPacket</code></li>
+</ul>
+<p>These two methods are data synchronization methods that will be used during normal games. Their names may be a little confusing, because <code>getUpdatePacket</code> is the method used by the server to send data packets, and <code>onDataPacket</code> is the client accepts Data packet method.</p>
+<p>Next is:</p>
+<ul>
+<li><code>getUpdateTag</code></li>
+<li><code>handleUpdateTag</code></li>
+</ul>
+<p>These two methods are called when the block is just loaded. The reason why these two methods exist is because some decorative block entities do not need to synchronize data frequently, such as billboards. Synchronize once when the block is loaded.</p>
+<p>In order for your block entity to automatically synchronize data when the game is loaded, you need to implement <code>getUpdateTag</code> and <code>handleUpdateTag</code> first, and then call them in <code>getUpdatePacket</code> and <code>onDataPacket</code>.</p>
+<p>If you need to trigger data synchronization, you need to call the <code>world.notifyBlockUpdate</code> method on the server.</p>
+<p>Of course, just like data storage, the default serialization and deserialization methods of these methods are NBT tags.</p>
+<pre><code class="language-java">@Override
+public CompoundNBT getUpdateTag() {
+  CompoundNBT compoundNBT = super.getUpdateTag();
+  compoundNBT.putBoolean(&quot;flag&quot;, flag);
+  return compoundNBT;
+}
+
+@Override
+public void handleUpdateTag(BlockState state, CompoundNBT tag) {
+  flag = tag.getBoolean(&quot;flag&quot;);
+}
+</code></pre>
+<p>As you can see, the data is transmitted with the NBT tag.</p>
+<pre><code class="language-java">@Nullable
+@Override
+public SUpdateTileEntityPacket getUpdatePacket() {
+  return new SUpdateTileEntityPacket(pos, 1, getUpdateTag());
+}
+
+@Override
+public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
+  handleUpdateTag(world.getBlockState(pkt.getPos()), pkt.getNbtCompound());
+}
+</code></pre>
+<p>Here we simply call the previous two methods. You can fill in the serial number value of the second parameter of <code>SUpdateTileEntityPacket</code>.</p>
+<p>Then there is our main logic <code>tick</code> method:</p>
+<pre><code class="language-java">@Override
+public void tick() {
+  if (world.isRemote &amp;&amp; flag) {
+    PlayerEntity player = world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), 10, false);
+    this.world.playSound(player, pos, SoundEvents.ENTITY_ZOMBIE_AMBIENT, SoundCategory.AMBIENT, 1.0f, 1.0f);
+    flag = false;
+  }
+  if (!world.isRemote) {
+    if (timer == MAX_TIME) {
+      flag = true;
+      world.notifyBlockUpdate(pos, getBlockState(), getBlockState(), Constants.BlockFlags.BLOCK_UPDATE);
+      flag = true;
+      timer = 0;
+    }
+    timer++;
+  }
+}
+</code></pre>
+<p>For your convenience, I have used two <code>if</code> statements here to distinguish the logic between the client and the server</p>
+<p>The first is the client:</p>
+<pre><code class="language-java">if (world.isRemote &amp;&amp; flag) {
+  PlayerEntity player = world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), 10, false);
+  this.world.playSound(player, pos, SoundEvents.ENTITY_ZOMBIE_AMBIENT, SoundCategory.AMBIENT, 1.0f, 1.0f);
+  flag = false;
+}
+</code></pre>
+<p>First, we judge whether it is on the client side, and whether the value of flag is true (true means to play the sound), and then get the nearest player, use the <code>this.world.playSound</code> method to play the sound, please pay attention, play the sound It can be executed on the client and the server at the same time. If you execute it on the server, a data packet will be sent to the client automatically and the client will play the sound.</p>
+<p>The first and second variables of <code>playSound</code> are easy to understand. The third variable is the sound to be played, and the third variable determines which sound control category controls the size of the sound.</p>
+<p>Next is the server:</p>
+<pre><code class="language-java">if (!world.isRemote) {
+  if (timer == MAX_TIME) {
+    flag = true;
+    world.notifyBlockUpdate(pos, getBlockState(), getBlockState(), Constants.BlockFlags.BLOCK_UPDATE);
+    flag = true;
+    timer = 0;
+  }
+  timer++;
+}
+</code></pre>
+<p>The server is basically a counter as before. The only special thing is that we call the <code>world.notifyBlockUpdate</code> method, because we don't need to update the <code>blockstate</code>, so the second and third parameters are the same. The last parameter What level of update is needed, Forge provides us with the <code>Constants</code> class, which has detailed instructions.</p>
+<p>Then there are things like adding textures and models, and interested readers can read the source code for themselves.</p>
+<p>After opening the game and placing the blocks, wait a while and you should be able to hear the roar of the zombies.</p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/tileentitydatasync">Source Code</a></p>
 <h1><a class="header" href="#special-render" id="special-render">Special render</a></h1>
 <h1><a class="header" href="#ibakedmodel" id="ibakedmodel">IBakedModel</a></h1>
 <h1><a class="header" href="#tileentityrneder" id="tileentityrneder">TileEntityRneder</a></h1>

@@ -160,6 +160,156 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#first-tileentity-and-data-storage" id="first-tileentity-and-data-storage">First TileEntity and Data Storage</a></h1>
+<p>In this section, we will learn how to create a block entity of our own. Let’s take a counter as an example. Its only function is to increase by one when you right-click the block, and then send the corresponding one to your chat box value.</p>
+<p>First, let's create our Block <code>ObsidianCounter.java</code>:</p>
+<pre><code class="language-java">public class ObsidianCounter extends Block {
+    public ObsidianCounter() {
+        super(Properties.create(Material.ROCK).hardnessAndResistance(5));
+    }
+
+    @Override
+    public boolean hasTileEntity(BlockState state) {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
+        return new ObsidianCounterTileEntity();
+    }
+
+    @Override
+    public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
+        if (!worldIn.isRemote &amp;&amp; handIn == Hand.MAIN_HAND) {
+            ObsidianCounterTileEntity obsidianCounterTileEntity = (ObsidianCounterTileEntity) worldIn.getTileEntity(pos);
+            int counter = obsidianCounterTileEntity.increase();
+            TranslationTextComponent translationTextComponent = new TranslationTextComponent(&quot;message.neutrino.counter&quot;, counter);
+            player.sendStatusMessage(translationTextComponent, false);
+        }
+        return ActionResultType.SUCCESS;
+    }
+}
+</code></pre>
+<p>We won't go into details about the registration part, here we will talk about a few functions. The first thing to talk about is the set of functions <code>hasTileEntity</code> and <code>createTileEntity</code> (**Please note that the two methods here are not <code>@Deprecated</code>, that is, they are not &quot;crossed&quot; after you rewrite What we need to rewrite is the method under the ʻIForgeBlock<code>interface, please be careful not to rewrite the wrong method**), this set of functions allows your block to be bound to a block entity, and the return value of</code>hasTileEntity<code>is set to</code>true <code>, it means that our block has a block entity. The function </code>createTileEntity<code>determines which block entity our block is. In our case, it is</code>ObsidianCounterTileEntity`.</p>
+<p>Let's skip the <code>onBlockActivated</code> method first to see what is in our block entity.</p>
+<p><code>ObsidianCounterTileEntity</code>:</p>
+<pre><code class="language-java">public class ObsidianCounterTileEntity extends TileEntity {
+    private int counter = 0;
+
+    public ObsidianCounterTileEntity() {
+        super(TileEntityTypeRegistry.obsidianCounterTileEntity.get());
+    }
+
+    public int increase() {
+        counter++;
+        markDirty();
+        return counter;
+    }
+}
+</code></pre>
+<p>As you can see, the content in this block entity is very simple, with only one construction method and one <code>increase</code> method. The <code>increase</code> method is related to the specific content we want to achieve. Here, let's first look at the construction method.</p>
+<pre><code class="language-java">super(TileEntityTypeRegistry.obsidianCounterTileEntity.get());
+</code></pre>
+<p>In the construction method here, we passed a <code>TilEnttityType</code> to our parent class, so what is this <code>TilEntityType</code>? This <code>TileEntityType</code> hence the name implies the &quot;type&quot; of the block entity. This &quot;type&quot; specifies how our block entity should be created and which blocks it is bound to. Next we will take a look at our <code>TilEntityType </code>How was it created and registered?</p>
+<p>Then we created a new class called <code>TileEntityTypeRegistry</code>:</p>
+<pre><code class="language-java">public class TileEntityTypeRegistry {
+    public static final DeferredRegister&lt;TileEntityType&lt;?&gt;&gt; TILE_ENTITIES = DeferredRegister.create(ForgeRegistries.TILE_ENTITIES, Utils.MOD_ID);
+    public static final RegistryObject&lt;TileEntityType&lt;ObsidianCounterTileEntity&gt;&gt; obsidianCounterTileEntity = TILE_ENTITIES.register(&quot;obsidian_counter_tileentity&quot;, () -&gt; TileEntityType.Builder.create(ObsidianCounterTileEntity::new, BlockRegistry.obsidianCounterBlock.get()).build(null));
+}
+</code></pre>
+<p>The first is the type, because <code>TileEntityType</code> is a generic class, and its generics can contain various <code>TileEntity</code>, so when we define <code>TILE_ENTITIES</code>, the type in <code>DeferredRegister</code> is <code>TileEntityType&lt;?&gt;</code>, the question mark here means that various <code>TileEntityType</code> such as <code>TileEntityType&lt;AEntity&gt;</code> and <code>TileEntityType&lt;BEntity&gt;</code> can be registered in <code>TILE_ENTITIES</code>.</p>
+<p>Then the type of our variable, because we are going to register <code>TileEntityType</code> for <code>ObsidianCounterTileEntity</code>, so the type we need is naturally <code>TileEntityType&lt;ObsidianCounterTileEntity&gt;</code>.</p>
+<p>The most complicated thing here should be the specific registration process, but it is not difficult to understand. The same as before, it is the registered name and a registered object. We can split this complicated sentence apart.</p>
+<pre><code class="language-java">TILE_ENTITY_TYPE_DEFERRED_REGISTER.register(&quot;obsidian_counter_tileentity&quot;,()-&gt; ...);
+</code></pre>
+<p>If we omit a series of complicated content inside, the core of this code is such a sentence, I believe everyone can understand this, the key point here is the &quot;...&quot; we omitted.</p>
+<p>The previously omitted content is as follows:</p>
+<pre><code class="language-java">TileEntityType.Builder.create(ObsidianCounterTileEntity::new, BlockRegistry.obsidianCounterBlock.get()).build(null));
+</code></pre>
+<p>As you can see, here we first call the <code>TileEntityType.Builder.create</code> method, which is a method provided by Minecraft to create a <code>TileEntityType</code>, and then call the <code>build</code> method. Let's first look at the parameters in the <code>build</code> method. In <code>build</code> we passed in a <code>null</code>. In fact, this place can be filled with an instance called <code>datafix</code>, which is used to archive different versions before Converted. Here we do not have this requirement (most mods are not expected to be realized), so we fill in a <code>null</code>.</p>
+<p>Then we look back at the two parameters in <code>TileEntityType.Builder.create</code>, the first parameter is a <code>supplier</code>, here we fill in the method reference of the construction method of the block entity, and the second type is and For the associated block, here we fill in the instance of our registered <code>ObsidianCounterBlock</code>. As for the registration of the block, I believe that the readers here have the ability to solve it by themselves.</p>
+<p>This way the content is a lot less at once, but for the convenience of readers' understanding, I still use the above writing method. Of course, don't forget to register <code>TILE_ENTITIES</code> in the Mod bus in your Mod main class.</p>
+<p>Then we can take a look at our logic</p>
+<pre><code class="language-java">@Override
+public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
+  if (!worldIn.isRemote &amp;&amp; handIn == Hand.MAIN_HAND) {
+    ObsidianCounterTileEntity obsidianCounterTileEntity = (ObsidianCounterTileEntity) worldIn.getTileEntity(pos);
+    int counter = obsidianCounterTileEntity.increase();
+    TranslationTextComponent translationTextComponent = new TranslationTextComponent(&quot;message.neutrino.counter&quot;, counter);
+    player.sendStatusMessage(translationTextComponent, false);
+  }
+  return ActionResultType.SUCCESS;
+}
+</code></pre>
+<p>The first is the block's <code>onBlockActivated</code> method. Please note that there are two <code>onBlockActivated</code> methods with the same name but different return values. Don't rewrite the method wrong.</p>
+<pre><code class="language-java">if (!worldIn.isRemote &amp;&amp; handIn == Hand.MAIN_HAND)
+</code></pre>
+<p>First of all, we judged whether our method is called on the server side. Remember that any logic that involves data processing should be executed on the server side. In addition, we also judged whether the incoming <code>handIn</code> is the &quot;master hand&quot;. This judgment is made because this method will be executed once for both hands.</p>
+<pre><code class="language-java">ObsidianCounterTileEntity obsidianCounterTileEntity = (ObsidianCounterTileEntity) worldIn.getTileEntity(pos);
+</code></pre>
+<p>Here we call the <code>worldIn.getTileEntity</code> method to get the <code>TileEntity</code> corresponding to our block. The reason must be called by this method is that even if a block is bound to a TileEntity, you cannot guarantee that this <code>TileEntity</code> It must exist.</p>
+<pre><code class="language-java">int counter = obsidianCounterTileEntity.increase();
+</code></pre>
+<p>Then we here increase and get the value by calling the <code>increase</code> method of our <code>obsidianCounterTileEntity</code>.</p>
+<pre><code class="language-java">public int increase() {
+  counter++;
+  return counter;
+}
+</code></pre>
+<p>The content of the <code>increase</code> method is very simple, I believe everyone can understand it.</p>
+<pre><code class="language-java">TranslationTextComponent translationTextComponent = new TranslationTextComponent(&quot;message.neutrino.counter&quot;, counter);
+</code></pre>
+<p>Then there is this sentence, first we create a <code>TranslationTextComponent</code>, here is the content we want to send to the player's chat box. As its name implies, this is a translated text, so it should be a &quot;key&quot; rather than a specific content, <code>&quot;message.tour14.counter&quot;</code> is the &quot;key&quot; value, we also passed in later The count value obtained, the reason for this, we first press the table.</p>
+<p>First, we add the following content to the language file (take English as an example).</p>
+<pre><code class="language-json"> &quot;message.neutrino.counter&quot;: &quot;count: %d&quot;
+</code></pre>
+<p>You can see that there is a <code>%d</code> here. At this time, the reason why we need to pass in our value is very clear. In fact, the value of our <code>counter</code> variable is formatted through <code>%d</code> .</p>
+<pre><code class="language-java">player.sendStatusMessage(translationTextComponent, false);
+</code></pre>
+<p>Finally, we call this statement and send a message to the player. Please note that because we have judged <code>!worldIn.isRemote</code> before, although this code is executed on the server side, because the specific message is displayed on the client side , So we need to send a message to the client by sending a package. Fortunately, Minecraft provides us with this method to send data, so we don’t need to implement it ourselves.</p>
+<p><img src="first-tileentity-and-data-storage.assets/image-20200429165945640.png" alt="image-20200429165945640" /></p>
+<p>You can see that our block can be successfully counted.</p>
+<p>But there is a bug in this block. When you exit the current save and re-enter, you will find that our counter starts counting from 0 again. Next, let's fix this problem.</p>
+<p>The reason for this bug is that when the save is running, the value of the counter exists in the memory and can function normally, but when the game is closed, because the important data in the memory is not saved to your hard disk, so open it next time During the game, these data cannot be reloaded and restored. Before our TileEntity did not implement this save and restore function, we will add this function to it next.</p>
+<p>The content of the <code>ObsidianCounterTileEntity</code> after the addition is as follows:</p>
+<pre><code class="language-java">public class ObsidianCounterTileEntity extends TileEntity {
+    private int counter = 0;
+
+    public ObsidianCounterTileEntity() {
+        super(TileEntityTypeRegistry.obsidianCounterTileEntity.get());
+    }
+
+    public int increase() {
+        counter++;
+        markDirty();
+        return counter;
+    }
+
+    @Override
+    public void read(BlockState state, CompoundNBT nbt) {
+        counter = nbt.getInt(&quot;counter&quot;);
+        super.read(state, nbt);
+    }
+
+    @Override
+    public CompoundNBT write(CompoundNBT compound) {
+        compound.putInt(&quot;counter&quot;, counter);
+        return super.write(compound);
+    }
+}
+</code></pre>
+<p>As you can see, compared to the previous code, we have overwritten the <code>write</code> and <code>read</code> methods. These two methods are used to save and restore data. In Minecraft, all data should ultimately be saved in NBT format (unless you implement the save method yourself), and the NBT tag in the code is represented by <code>CompoundNBT</code>. NBT tags are also a &quot;key-value pair&quot; structure, and each value has a corresponding name. The method at the beginning of <code>put</code> is to write a value to the NBT tag, and the method at the beginning of <code>get</code> is to get the value. In addition to <code>CompoudNBT</code>, there is also the <code>ListNBT</code> class to represent the NBT tag of the array type.</p>
+<p>The <code>write</code> here is the method of data saving. Its incoming value is the NBT tag that has been saved by other classes before, and its return value is the NBT tag that will eventually be saved to the hard disk (there are other classes to write Enter), under normal circumstances, you should call <code>return super.write(compound);</code> to do the final return.</p>
+<p>The <code>read</code> method is just the opposite, here we call the <code>counter = compound.getInt(&quot;counter&quot;);</code> method to restore the data of our counter. Similarly, you should call <code>super.read(compound);</code> to do the final return.</p>
+<p>Another very important thing is</p>
+<pre><code class="language-java">public int increase() {
+  counter++;
+  markDirty();
+  return counter;
+}
+</code></pre>
+<p>We have added the <code>markDirty()</code> method here. This method means to mark our data as modified so that the game knows to save and call the save method when it is closed. This is because compared to the execution speed of the CPU, the saving and reading and writing speed of the hard disk is very slow, so if frequent saving and reading and writing operations will seriously slow down the speed of the game, a reasonable way is to mark that we need to save The data is then saved together at a unified point in time, the role of <code>markDirty()</code> is exactly this.</p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/first_tileentity">Source Code</a></p>
 
                     </main>
 

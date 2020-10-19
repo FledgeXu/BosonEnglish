@@ -164,24 +164,42 @@
 <p>In this section, I'll go over how Minecraft works in general, and a very important concept: the &quot;sides&quot;.</p>
 <p>Minecraft generally belongs to &quot;C/S (Client/Server) Architecture&quot;. So what is &quot;server&quot; and what is &quot;client&quot;?</p>
 <p>The name actually gives a general idea of what it means, the &quot;server&quot; is used to provide the service, and the &quot;client&quot; is used directly by the user. So how are these two sides represented in Minecraft?</p>
-<p>In Minecraft the division of duties between the two sides is as follows.</p>
+<p>Actually, there are four sides in Minecraft.</p>
+<blockquote>
+<p>When we say “client” or “server”, it usually follows with a fairly intuitive understanding of what part of the game we’re talking about. After all, a client is what the user interacts with, and a server is where the user connects for a multiplayer game. Easy, right?</p>
+<p>As it turns out, there can be some ambiguity even with two such terms. Here we disambiguate the four possible meanings of “client” and “server”:</p>
 <ul>
-<li>
-<p>server side</p>
-<p>Responsible for the game's logic, reading and writing of data.</p>
-</li>
-<li>
-<p>client side</p>
-<p>It accepts input and output from the user and renders the game screen based on the data from the server.</p>
-</li>
+<li>Physical client - The <em>physical client</em> is the entire program that runs whenever you launch Minecraft from the launcher. All threads, processes, and services that run during the game’s graphical, interactable lifetime are part of the physical client.</li>
+<li>Physical server - Often known as the dedicated server, the <em>physical server</em> is the entire program that runs whenever you launch any sort of <code>minecraft_server.jar</code> that does not bring up a playable GUI.</li>
+<li>Logical server - The <em>logical server</em> is what runs game logic: mob spawning, weather, updating inventories, health, AI, and all other game mechanics. The logical server is present within the physical server, but is also can run inside a physical client together with a logical client, as a single player world. The logical server always runs in a thread named the <code>Server Thread</code>.</li>
+<li>Logical client - The <em>logical client</em> is what accepts input from the player and relays it to the logical server. In addition, it also receives information from the logical server and makes it available graphically to the player. The logical client runs in the <code>Client Thread</code>, though often several other threads are spawned to handle things like audio and chunk render batching.</li>
 </ul>
+<p>In the Minecraft codebase, the physical side is represented by an enum called <code>Dist</code>, while the logical side is represented by an enum called <code>LogicalSide</code>.</p>
+<p>— <a href="https://mcforge.readthedocs.io/en/1.14.x/concepts/sides/">Forge Doc</a></p>
+</blockquote>
 <p>It's worth noting that the distinction between client and server here is only logical. In fact if you are in single player mode, there will be both a server and a client on your computer, and they are in different threads<sup class="footnote-reference"><a href="#1">1</a></sup>. But when you connect to a server, only the client exists on your computer and the server is moved to a remote server.</p>
 <p>The following diagram roughly explains how Minecraft works.</p>
 <p><img src="how-minecraft-works.assets/How_minecraft_work.svg" alt="How_minecraft_work" /></p>
 <p>When you see this picture, you may wonder why the client has a data model when the server is responsible for the game logic. In fact, the &quot;client-side data model&quot; here is just a copy of the &quot;server-side data model&quot;, although they have separate game ticks and share a lot of the same code, but the final logic is still the server-side prevails.</p>
 <p>As we mentioned before, the client and server are independent, but they inevitably need to synchronize data, and in Minecraft, all client and server data synchronization is done through network packets. In most of the cases, the original version has already implemented a method to synchronize the data, we just need to call the method that has already been implemented, but in some cases, the original version does not implement the corresponding function, or it is not suitable to use the function provided by the original version, we have to create and send network packets to complete the data synchronization.</p>
 <p>So the next question is, how do we distinguish in our code whether we are on the client side or the server side?</p>
-<p>Minecraft's <code>World</code> has an <code>isRemote</code> field, which is <code>true</code> when on the client and <code>false</code> when on the server.</p>
+<blockquote>
+<h3><a class="header" href="#worldisremote" id="worldisremote"><code>world.isRemote</code></a></h3>
+<p>This boolean check will be your most used way to check sides. Querying this field on a <code>World</code> object establishes the <strong>logical</strong> side the world belongs to. That is, if this field is <code>true</code>, the world is currently running on the logical client. If the field is <code>false</code>, the world is running on the logical server. It follows that the physical server will always contain <code>false</code> in this field, but we cannot assume that <code>false</code> implies a physical server, since this field can also be <code>false</code> for the logical server inside a physical client (in other words, a single player world).</p>
+<p>Use this check whenever you need to determine if game logic and other mechanics should be run. For example, if you want to damage the player every time they click your block, or have your machine process dirt into diamonds, you should only do so after ensuring <code>world.isRemote</code> is <code>false</code>. Applying game logic to the logical client can cause desynchronization (ghost entities, desynchronized stats, etc.) in the lightest case, and crashes in the worst case.</p>
+<p>This check should be used as your go-to default. Aside from <code>DistExecutor</code>, rarely will you need the other ways of determining side and adjusting behavior.</p>
+<h3><a class="header" href="#distexecutor" id="distexecutor"><code>DistExecutor</code></a></h3>
+<p>Considering the use of a single “universal” jar for client and server mods, and the separation of the physical sides into two jars, an important question comes to mind: How do we use code that is only present on one physical side? All code in <code>net.minecraft.client</code> is only present on the physical client, and all code in <code>net.minecraft.server.dedicated</code> is only present on the physical server. If any class you write references those names in any way, they will crash the game when that respective class is loaded in an environment where those names do not exist. A very common mistake in beginners is to call <code>Minecraft.getMinecraft().&lt;doStuff&gt;()</code> in block or tile entity classes, which will crash any physical server as soon as the class is loaded.</p>
+<p>How do we resolve this? Luckily, FML has <code>DistExecutor</code>, which provides various methods to run different methods on different physical sides, or a single method only on one side.</p>
+<p>Note</p>
+<p>It is important to understand that FML checks based on the <strong>physical</strong> side. A single player world (logical server + logical client within a physical client) will always use <code>Dist.CLIENT</code>!</p>
+<h3><a class="header" href="#thread-groups" id="thread-groups">Thread Groups</a></h3>
+<p>If <code>Thread.currentThread().getThreadGroup() == SidedThreadGroups.SERVER</code> is true, it is likely the current thread is on the logical server. Otherwise, it is likely on the logical client. This is useful to retrieve the <strong>logical</strong> side when you do not have access to a <code>World</code> object to check <code>isRemote</code>. It <em>guesses</em> which logical side you are on by looking at the group of the currently running thread. Because it is a guess, this method should only be used when other options have been exhausted. In nearly every case, you should prefer checking <code>world.isRemote</code> to this check.</p>
+<h3><a class="header" href="#fmlenvironmentdist-and-onlyin" id="fmlenvironmentdist-and-onlyin"><code>FMLEnvironment.dist</code> and <code>@OnlyIn</code></a></h3>
+<p><code>FMLEnvironment.dist</code> holds the <strong>physical</strong> side your code is running on. Since it is determined at startup, it does not rely on guessing to return its result. The number of use cases for this is limited, however.</p>
+<p>Annotating a method or field with the <code>@OnlyIn(Dist)</code> annotation indicates to the loader that the respective member should be completely stripped out of the definition not on the specified <strong>physical</strong> side. Usually, these are only seen when browsing through the decompiled Minecraft code, indicating methods that the Mojang obfuscator stripped out. There is little to no reason for using this annotation directly. Only use it if you are overriding a vanilla method that already has <code>@OnlyIn</code> defined. In most other cases where you need to dispatch behavior based on physical sides, use <code>DistExecutor</code> or a check on <code>FMLEnvironment.dist</code> instead.</p>
+<p>— <a href="https://mcforge.readthedocs.io/en/1.14.x/concepts/sides/#performing-side-specific-operations">Forge Dock</a></p>
+</blockquote>
 <hr />
 <div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
 <p>Thread is one of the units of program scheduling, being in different threads means that the logic and data of these two are independent of each other and can only be synchronized by specific methods. Specifically, the server is in the &quot;Server thread&quot; and the client is in the &quot;Render thread&quot;, if you've ever watched the output log when Minecraft starts, you should see these two words.</p>

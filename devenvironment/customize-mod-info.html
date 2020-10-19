@@ -168,6 +168,19 @@
 <p>Then click the re-import button in the right Gradle panel to re-import the project, because the <code>build.gradle</code> file is very important, please be careful not to correct it.</p>
 <p><img src="customize-mod-info.assets/image-20200928114634037.png" alt="image-20200928114634037" /></p>
 <p>This process may involve downloading files (but not a lot), there is a chance of errors, check your <code>build.gradle</code> for errors, and try a few times.</p>
+<h2><a class="header" href="#gradlebuild" id="gradlebuild">gradle.build</a></h2>
+<p>You also need to change these lines in build.gradle</p>
+<pre><code class="language-groovy">version = '1.0'
+group = 'com.yourname.modid' 
+archivesBaseName = 'modid'
+</code></pre>
+<p>To:</p>
+<pre><code class="language-groovy">version = '1.0'
+group = 'com.github.fledgexu.boson' 
+archivesBaseName = 'Boson'
+</code></pre>
+<p>The first line shoul be your mode’s version. The second should be your mods group name, if you don’t know how to naming it, please read <a href="http://maven.apache.org/guides/mini/guide-naming-conventions.html">this</a>.</p>
+<p>The last, archivesBaseName, should the Jar name of Your mod. In there, i put the “Boson”.</p>
 <h2><a class="header" href="#configuration" id="configuration">Configuration</a></h2>
 <p>First we select all the directories and files in the <code>java</code> folder and then right-click to delete the default classes under the Java package.</p>
 <p><img src="customize-mod-info.assets/image-20200928164532729.png" alt="image-20200928164532729" /></p>
@@ -203,7 +216,7 @@ public class Boson {
 <p>Becasue the most readers of this verison of Boson are English speaker. You can understand  comments. So just read the commnet to understand the function of configuration.</p>
 <p>The rest are all dependencies, and Forge's official examples are clearly written, so we won't elaborate here.</p>
 <p>The <code>mods.toml</code> I finished modifying is as follows:</p>
-<pre><code class="language-toml">modLoader=&quot;javafml&quot; 
+<pre><code class="language-toml">modLoader=&quot;javafml&quot;  
 loaderVersion=&quot;[34,)&quot; 
 license=&quot;GNU GPLv3&quot;
 [[mods]]
