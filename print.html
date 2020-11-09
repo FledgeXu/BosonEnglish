@@ -28,7 +28,9 @@
         <link rel="stylesheet" href="css/variables.css">
         <link rel="stylesheet" href="css/general.css">
         <link rel="stylesheet" href="css/chrome.css">
+        
         <link rel="stylesheet" href="css/print.css" media="print">
+        
 
         <!-- Fonts -->
         <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
@@ -130,9 +132,11 @@
                     <h1 class="menu-title">Boson 1.16 Modding Tutorail</h1>
 
                     <div class="right-buttons">
+                        
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
+                        
                         
                     </div>
                 </div>
@@ -1840,7 +1844,79 @@ public void tick() {
 <h1><a class="header" href="#configure" id="configure">Configure</a></h1>
 <h1><a class="header" href="#potion" id="potion">Potion</a></h1>
 <h1><a class="header" href="#paticle" id="paticle">Paticle</a></h1>
-<h1><a class="header" href="#sound" id="sound">Sound</a></h1>
+<h1><a class="header" href="#sounds" id="sounds">Sounds</a></h1>
+<p>In this section, we'll talk about learning how to add sound effects to my mods, and it's very simple, so let me get started.</p>
+<pre><code class="language-java">public class SoundEventRegistry {
+    public static final DeferredRegister&lt;SoundEvent&gt; SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, Utils.MOD_ID);
+    public static final RegistryObject&lt;SoundEvent&gt; meaSound = SOUNDS.register(&quot;mea&quot;, () -&gt; new SoundEvent(new ResourceLocation(Utils.MOD_ID, &quot;mea&quot;)));
+}
+</code></pre>
+<p>With those two sentences, you can register our sound effects.</p>
+<p>Next, let's add sound effects and create the following files and directories in your <code>Resource</code> directory.</p>
+<pre><code>resources
+├── META-INF
+│   └── mods.toml
+├── assets
+│   └── boson
+│       ├── blockstates
+│       ├── lang
+│       ├── models
+│       ├── sounds
+│       ├── sounds.json
+│       └── textures
+├── data
+└── pack.mcmeta
+</code></pre>
+<p>Here we have created a <code>sounds.json</code>, please refer to the wiki for the format of this file.</p>
+<p>It reads as follows</p>
+<pre><code class="language-json">{
+  &quot;mea&quot;: {
+    &quot;subtitle&quot;: &quot;mea&quot;,
+    &quot;replace&quot;: &quot;true&quot;,
+    &quot;sounds&quot;: [
+      {
+        &quot;name&quot;: &quot;boson:mea&quot;,
+        &quot;steam&quot;: true
+      }
+    ]
+  }
+}
+</code></pre>
+<p>Note that the outermost key name should be the same as the second parameter in your previous <code>ResourceLocation</code>. We then specify the specific audio file in <code>name</code>. Please note that Minecraft only allows loading of audio files in ogg format.</p>
+<p>Next, we place the finished audio file in the <code>sounds</code> file.</p>
+<pre><code>resources
+├── META-INF
+│   └── mods.toml
+├── assets
+│   └── boson
+│       ├── blockstates
+│       ├── lang
+│       ├── models
+│       ├── sounds
+│       │   └── mea.ogg
+│       ├── sounds.json
+│       └── textures
+├── data
+└── pack.mcmeta
+</code></pre>
+<p>Place the directory as above.</p>
+<p>Next you can create objects to use with our sound effects!</p>
+<pre><code class="language-java">public class SoundTestItem extends Item {
+    public SoundTestItem() {
+        super(new Properties().group(ModGroup.itemGroup));
+    }
+
+    @Override
+    public ActionResult&lt;ItemStack&gt; onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
+        if (worldIn.isRemote) {
+            worldIn.playSound(playerIn, playerIn.getPosition(), SoundEventRegistry.meaSound.get(), SoundCategory.AMBIENT, 10f, 1f);
+        }
+        return super.onItemRightClick(worldIn, playerIn, handIn);
+    }
+}
+</code></pre>
+<p>Open the game and try it out, we should have successfully added sound effects.</p>
+<p><a href="https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/sounds">Source COd</a></p>
 <h1><a class="header" href="#user-input" id="user-input">User Input</a></h1>
 <h1><a class="header" href="#compatibiilty" id="compatibiilty">Compatibiilty</a></h1>
 <h1><a class="header" href="#access-transformer" id="access-transformer">Access Transformer</a></h1>
