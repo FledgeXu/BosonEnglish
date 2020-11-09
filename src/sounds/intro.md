@@ -91,5 +91,5 @@ public class SoundTestItem extends Item {
 
 Open the game and try it out, we should have successfully added sound effects.
 
-[Source COd](https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/sounds)
+[Source Code](https://github.com/FledgeXu/BosonSourceCode/tree/master/src/main/java/com/tutorial/boson/sounds)
 
