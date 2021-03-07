@@ -1,10 +1,10 @@
 # Summary
 
-- [Introducation](./introducation/intro.md)
-  - [What is Forge?](./introducation/what-is-forge.md)
-  - [How Minecraft Works?](./introducation/how-minecraft-works.md)
-  - [Development Model](./introducation/development-model.md)
-  - [Core Concepetion](./introducation/core-conception.md)
+- [Introduction](./introduction/intro.md)
+  - [What is Forge?](./introduction/what-is-forge.md)
+  - [How Minecraft Works?](./introduction/how-minecraft-works.md)
+  - [Development Model](./introduction/development-model.md)
+  - [Core Concepetion](./introduction/core-conception.md)
 - [Development Environment](./devenvironment/intro.md)
   - [Setup Environment](./devenvironment/setup-environment.md)
   - [Introduce Environment](./devenvironment/introduce-environment.md)
