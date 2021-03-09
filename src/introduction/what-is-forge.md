@@ -4,7 +4,7 @@ This tutorial is a mod development tutorial based on Forge, so it's natural to a
 
 At first glance, this doesn't seem like a question at all, “Forge? Isn't Forge just Forge?” The first thought that comes to your inner mind when you see this question is probably this.
 
-But it's necessary to answer this question, and I'm going to talk a little bit about what Forge is, and the history of Forge. This may seem unrelated to our tutorial, but it is actually the "Lore" of mod development, and learning it will help you communicate with others better.
+But it's necessary to answer this question, and I'm going to talk a little bit about what Forge is and the history of Forge. This may seem unrelated to our tutorial, but it is actually the "Lore" of mod development and learning it will help you communicate with others better.
 
 We have to start with Minecraft itself, but first we have to make it clear that Minecraft is a commercial software written in Java. This means two things: first, Minecraft is relatively easy to modify, and second, the code itself is not open source and is obfuscated. Early on in Minecraft's history, because Mojang never provided an official API[^1] for Minecraft, the "Mod Coder Pack" project was born (hereinafter referred to as MCP).
 
@@ -16,7 +16,7 @@ So what are these three?
 
 The first is the `notch name`, which is a name that Minecraft has directly decompiled and obfuscated, and is usually a meaningless alphanumeric combination. You can tell from the name Notch that it comes directly from Minecraft (~~and the grudge against Notch~~), for example `u` is a typical `notch name`.
 
-There is a example about `notch name`
+Here is an example for `notch name`
 
 ```java
 public class cbw extends cbq {
@@ -30,7 +30,7 @@ public class cbw extends cbq {
 }
 ```
 
-Next is the `srg name`, which is a one-to-one correspondence with the `notch name`, and `srg name` will not change from one version to the next, the reason why it is called `srg name`(`srg` meas Searge) is to commemorate [the leader](https://twitter.com/SeargeDP) of the MCP project, Searge. But there are corresponding prefixes and suffixes to distinguish them. Take the above `u` as an example, its `srg name` is `func_214968_u`.
+Next is the `srg name`, which is a one-to-one correspondence with the `notch name`, and `srg name` will not change from one version to the next. The reason it is called `srg name`(`srg` meaning Searge) is to commemorate [the leader](https://twitter.com/SeargeDP) of the MCP project, Searge. There are corresponding prefixes and suffixes to distinguish Searge and Notch names. Take the above `u` as an example, its `srg name` is `func_214968_u`.
 
 ```java
 public class NetherGenSettings extends GenerationSettings {
@@ -44,7 +44,7 @@ public class NetherGenSettings extends GenerationSettings {
 }
 ```
 
-Finally, there's the `mcp name`, which is also the name we come across most in mod development, where the code is already readable. In `mcp name`, the code is already readable. It's the same as the names we use in our normal java programs. But the `mcp name` is subject to change. For example, the `func_214968_u` above has an `mcp name` of `getBedrockFloorHeight`. The class name in `mcp name` is the same as the class name in `srg name`.
+Finally there's the `mcp name`, the name we come across most in mod development. In `mcp name`, the code is already readable. It's the same as the names we use in our normal java programs. But the `mcp name` is subject to change. For example, the `func_214968_u` above has an `mcp name` of `getBedrockFloorHeight`. The class name in `mcp name` is the same as the class name in `srg name`.
 
 ```java
 public class NetherGenSettings extends GenerationSettings {
