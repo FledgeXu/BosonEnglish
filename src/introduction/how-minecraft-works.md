@@ -2,7 +2,7 @@
 
 This is very important section where you must build a model image of Minecraft running in your own brain, which will help you understand the concepts covered later.
 
-In this section I'll go over how Minecraft works in general and it's very important concept: the "sides".
+In this section I'll go over how Minecraft works in general and its very important concept: the "sides".
 
 Minecraft generally belongs to "C/S (Client/Server) Architecture". So what is "server" and what is "client"?
 
