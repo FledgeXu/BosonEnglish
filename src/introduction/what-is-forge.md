@@ -2,13 +2,13 @@
 
 This tutorial is a mod development tutorial based on Forge, so it's natural to answer the question, "What is Forge?
 
-At first glance, this doesn't seem like a question at all, “Forge? Isn't Forge just Forge?” The first thought that comes to your inner mind when you see this question is probably this.
+At first glance, this doesn't seem like a question at all, “Forge? Isn't Forge just Forge?” This is probably the first thought that comes to your mind when you see this question.
 
-But it's necessary to answer this question, and I'm going to talk a little bit about what Forge is and the history of Forge. This may seem unrelated to our tutorial, but it is actually the "Lore" of mod development and learning it will help you communicate with others better.
+But it's necessary to answer this question, and I'm going to talk a little bit about what Forge is and it's history. This may seem unrelated to our tutorial, but it is actually the "Lore" of mod development and learning it will help you communicate with others better.
 
-We have to start with Minecraft itself, but first we have to make it clear that Minecraft is a commercial software written in Java. This means two things: first, Minecraft is relatively easy to modify, and second, the code itself is not open source and is obfuscated. Early on in Minecraft's history, because Mojang never provided an official API[^1] for Minecraft, the "Mod Coder Pack" project was born (hereinafter referred to as MCP).
+We have to start with Minecraft itself, but first we have to make it clear that Minecraft is a commercial software written in Java. This means two things: first, Minecraft is relatively easy to modify, and second, code itself is not open source and is obfuscated. Early on in Minecraft's history, because Mojang never provided an official API[^1] for Minecraft, the "Mod Coder Pack" project was born (hereinafter referred to as MCP).
 
-Remember what I said earlier about the two features of Minecraft that MCP uses to implement a set of tools that allow developers to modify the content of Minecraft jar packs directly?
+Remember what I said earlier about two features of Minecraft that MCP uses to implement a set of tools that allow developers to modify content of Minecraft jar packs directly?
 
 So `srg name`, `notch name` and `mcp name` were born.
 
@@ -60,7 +60,7 @@ public class NetherGenSettings extends GenerationSettings {
 
 As time went on, mod developers realized that modding Jar files directly to write mods was too crude, and that mod-to-mod compatibility was virtually non-existent. So Forge was born.
 
-Forge was actually a set of third-party APIs implemented by modifying the Minecraft way, and as time went on, MCP is now dead (some of MCP's tools are still alive). In addition to the Forge set of APIs, Fabric is also in the limelight, and Forge itself underwent a rewrite after Minecraft 1.13 arrived, introducing a number of APIs for functional programming.
+Forge was actually a set of third-party APIs implemented by modifying the Minecraft way, and as time went on, MCP is now dead (some of MCP's tools are still alive). In addition to the Forge set of API's there's also a lightweight Fabric API. Forge itself underwent a rewrite after Minecraft 1.13 arrived, introducing a number of API's for functional programming.
 
 So how did Forge use the three names we mentioned earlier?
 
